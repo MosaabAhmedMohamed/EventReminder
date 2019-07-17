@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginBottom="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_width="240dp"
+    android:orientation="vertical"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    android:background="@color/black"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <LinearLayout
+            android:id="@+id/liner_menu_items"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_width="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/logo" />
+
+
+            <Button
+                android:id="@+id/out_from_google_btn"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="24dp"
+                android:visibility="visible"
+                android:text="@string/Sign_out"
+                android:textSize="12sp"
+                android:drawablePadding="4dp"
+                android:drawableStart="@drawable/google_logo_ic"
+                android:textColor="@color/black"
+                android:padding="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/logo"
+                android:background="@drawable/white_square_shape"
+                tools:visibility="visible" />
+
+            <Button
+                android:id="@+id/out_from_facebook_btn"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="24dp"
+                android:visibility="visible"
+                android:text="@string/Sign_out"
+                android:textSize="12sp"
+                android:textColor="@color/black"
+                android:padding="4dp"
+                android:drawablePadding="4dp"
+                android:drawableStart="@drawable/facebook_log_ic"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/logo"
+                android:background="@drawable/white_square_shape"
+                tools:visibility="visible" />
+        </LinearLayout>
+</ScrollView>
+

@@ -4,6 +4,7 @@ package com.example.eventreminder.Activites;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.eventreminder.BaseViews.BaseActivity;
 import com.example.eventreminder.R;
@@ -16,6 +17,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,22 +39,22 @@ public class Login extends BaseActivity {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestScopes(new Scope(CALENDAR_SCOPE))
-                .requestEmail()
-                .build();
-
-        signInClient = GoogleSignIn.getClient(this, gso);
-
+        GoogleSignInAccount acc = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+        if (acc != null && acc.getAccount() != null) {
+           goToHomeAndSaveUser(acc);
+        } else {
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestScopes(new Scope(CALENDAR_SCOPE))
+                    .requestEmail()
+                    .build();
+            signInClient = GoogleSignIn.getClient(this, gso);
+            Toast.makeText(this, R.string.please_sign_in, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (GoogleSignIn.hasPermissions(account, new Scope(CALENDAR_SCOPE))) {
-            goToHome(account);
-        }
     }
 
     @OnClick(R.id.sign_in_button)
@@ -73,16 +75,22 @@ public class Login extends BaseActivity {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                goToHome(account);
+                goToHomeAndSaveUser(account);
             } catch (ApiException e) {
                 Log.w(TAG, "handleSignInResult:error", e);
             }
         }
     }
 
-    private void goToHome(GoogleSignInAccount account) {
+    private void goToHomeAndSaveUser(GoogleSignInAccount account) {
         if (account != null) {
+            editor.putString(Constants.GOOGLE_USER, new Gson().toJson(account));
+            editor.commit();
             startActivity(new Intent(this, Home.class));
+            finish();
+        }
+        else {
+            Toast.makeText(this, "error occurred", Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Event Reminder</string>
+    <string name="home">Home</string>
+    <string name="Sign_out_from_goole">Sign out from google </string>
+    <string name="please_sign_in">Please sign in to your google account</string>
+    <string name="Sign_out_from_facebook">Sign out fro Facebook</string>
+    <string name="Sign_out">Sign out</string>
 </resources>

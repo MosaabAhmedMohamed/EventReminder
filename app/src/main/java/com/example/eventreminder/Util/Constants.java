@@ -21,7 +21,9 @@ public class Constants {
 
 
     public static final String CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar";
-
+    public static final String EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events";
+    public static final String GOOGLE_USER = "GOOGLE_SUER";
+    public static final String FACEBOOK_SUER = "FACEBOOK_USER";
 
     public boolean isValidEmail(CharSequence target) {
         return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
