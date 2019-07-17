@@ -16,6 +16,12 @@ public class Constants {
         return constants;
     }
 
+    public static final int RC_SIGN_IN = 9001;
+    public static final int RC_RECOVERABLE = 9002;
+
+
+    public static final String CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar";
+
 
     public boolean isValidEmail(CharSequence target) {
         return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());

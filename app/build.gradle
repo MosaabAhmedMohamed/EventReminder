@@ -17,6 +17,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -40,6 +45,17 @@ dependencies {
     //google Auth
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
 
+    //google Apis
+    implementation 'com.google.api-client:google-api-client:1.25.0'
+    implementation 'com.google.api-client:google-api-client-android:1.23.0'
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    implementation 'com.google.apis:google-api-services-calendar:v3-rev305-1.22.0'
+    implementation group: 'org.projectlombok', name: 'lombok', version: '1.18.8'
+
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.8'
+    testImplementation 'junit:junit:4.12'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.12.2'
 
     //butter knife
     implementation 'com.jakewharton:butterknife:10.1.0'
