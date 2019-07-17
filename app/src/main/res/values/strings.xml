@@ -7,4 +7,6 @@
     <string name="Sign_out">Sign out</string>
     <string name="google">Google</string>
     <string name="facebook" >Facebook</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
 </resources>

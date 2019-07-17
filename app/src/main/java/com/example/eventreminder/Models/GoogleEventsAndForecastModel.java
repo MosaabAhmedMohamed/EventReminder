@@ -1,4 +1,4 @@
 package com.example.eventreminder.Models;
 
-public class GoogleEventsAndForCastModel {
+public class GoogleEventsAndForecastModel {
 }

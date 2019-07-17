@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventreminder.Async.MakeGoogleEventsRequestTask;
 import com.example.eventreminder.BaseViews.BaseFragment;
@@ -31,15 +32,18 @@ import com.google.api.services.calendar.model.Event;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import butterknife.BindView;
 
 import static android.app.Activity.RESULT_OK;
 import static com.example.eventreminder.Util.Constants.RC_RECOVERABLE;
 
 public class GoogleEventsList extends BaseFragment {
     private static final String TAG = "GoogleEventsList";
+    @BindView(R.id.events_recycler)
+    RecyclerView eventsRecycler;
     private View view;
 
 
@@ -73,27 +77,22 @@ public class GoogleEventsList extends BaseFragment {
     }
 
     private void subScribeToObserver() {
-        if (googleListViewModel.getWeatherResponseMutableLiveData() == null)
-        {
-            googleListViewModel.getForCastData("cairo",Constants.getInstance().openWeatherMapAPIKey,"16").observe(this, new Observer<WeatherResponse>() {
+        if (googleListViewModel.getWeatherResponseMutableLiveData() == null) {
+            googleListViewModel.getForCastData("cairo", Constants.getInstance().openWeatherMapAPIKey, "16").observe(this, new Observer<WeatherResponse>() {
                 @Override
                 public void onChanged(WeatherResponse weatherResponse) {
-                    if (weatherResponse.getCod().equals("200"))
-                    {
-                        Log.d(TAG, "onChanged: 1"+weatherResponse.getList().size());
-                    }else
-                    {
+                    if (weatherResponse.getCod().equals("200")) {
+                        Log.d(TAG, "onChanged: 1" + weatherResponse.getList().size());
+                    } else {
                         Toast.makeText(getActivity(), "errorr", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
-        }
-        else
-        {
+        } else {
             googleListViewModel.getWeatherResponseMutableLiveData().observe(this, new Observer<WeatherResponse>() {
                 @Override
                 public void onChanged(WeatherResponse weatherResponse) {
-                    Log.d(TAG, "onChanged: 2"+weatherResponse.getList().size());
+                    Log.d(TAG, "onChanged: 2" + weatherResponse.getList().size());
 
                 }
             });
