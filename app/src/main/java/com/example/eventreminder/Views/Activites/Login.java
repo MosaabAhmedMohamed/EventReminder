@@ -84,6 +84,7 @@ public class Login extends BaseActivity {
 
     private void goToHomeAndSaveUser(GoogleSignInAccount account) {
         if (account != null) {
+            editor.putBoolean("login",true);
             editor.putString(Constants.GOOGLE_USER, new Gson().toJson(account));
             editor.commit();
             startActivity(new Intent(this, Home.class));

@@ -83,11 +83,6 @@ public class Home extends BaseActivity {
 
 
     private GoogleSignInClient signInClient;
-    private Calendar mService = null;
-    private GoogleAccountCredential credential;
-
-    private static final String[] SCOPES = {CalendarScopes.CALENDAR_READONLY, CalendarScopes.CALENDAR};
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,8 +94,6 @@ public class Home extends BaseActivity {
     }
 
     private void init() {
-        googleEventsList = GoogleEventsList.newInstance();
-        CurrentFragment = googleEventsList;
         GoogleSignInAccount acc = new Gson().fromJson(sharedPreferences.getString(Constants.GOOGLE_USER, " "), GoogleSignInAccount.class);
         if (acc != null && acc.getAccount() != null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -109,21 +102,13 @@ public class Home extends BaseActivity {
                     .build();
             signInClient = GoogleSignIn.getClient(this, gso);
 
-            credential = GoogleAccountCredential
-                    .usingOAuth2(getApplicationContext(),
-                            Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
-            credential.setSelectedAccountName(acc.getAccount().name);
-            getResultsFromApi(credential);
+            googleEventsList = GoogleEventsList.newInstance();
+            CurrentFragment = googleEventsList;
+            onTabSelected(0);
         } else {
             startActivity(new Intent(this, Login.class));
             finish();
         }
-    }
-
-    private void getResultsFromApi(GoogleAccountCredential credential) {
-
-
-        new MakeRequestTask(credential).execute();
     }
 
     @OnClick({R.id.menu, R.id.out_from_google_btn, R.id.out_from_facebook_btn, R.id.facebook_nav_layout, R.id.google_nav_layout})
@@ -139,10 +124,10 @@ public class Home extends BaseActivity {
             case R.id.out_from_facebook_btn:
                 break;
             case R.id.facebook_nav_layout:
-                onTabSelected(0);
+                onTabSelected(1);
                 break;
             case R.id.google_nav_layout:
-                onTabSelected(1);
+                onTabSelected(0);
                 break;
         }
     }
@@ -151,118 +136,11 @@ public class Home extends BaseActivity {
     private void signOutFromGoogle() {
         signInClient.signOut().addOnCompleteListener(task -> finish());
         editor.remove(Constants.GOOGLE_USER);
+        editor.putBoolean("login", false);
         editor.commit();
         startActivity(new Intent(this, Login.class));
         finish();
 
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_RECOVERABLE) {
-            if (resultCode == RESULT_OK) {
-                buildSchedule();
-            } else {
-                Toast.makeText(this, "error", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private void buildSchedule() {
-        GoogleSignInAccount acc = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
-        if (acc != null) {
-            getResultsFromApi(credential);
-        } else {
-            Toast.makeText(this, R.string.please_sign_in, Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, Login.class));
-            finish();
-        }
-    }
-
-    public void onRecoverableAuthException(UserRecoverableAuthIOException recoverableException) {
-        Log.w(TAG, "onRecoverableAuthException", recoverableException);
-        startActivityForResult(recoverableException.getIntent(), RC_RECOVERABLE);
-    }
-
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
-        private static final String TAG = "MakeRequestTask";
-        private Exception mLastError = null;
-
-        MakeRequestTask(GoogleAccountCredential credential) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new Calendar.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName("Event Reminder")
-                    .build();
-        }
-
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            try {
-                return getDataFromApi();
-
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onPostExecute(List<String> output) {
-            super.onPostExecute(output);
-            if (output == null || output.size() == 0) {
-                Log.d(TAG, "onPostExecute: " + "No results returned.");
-            } else {
-                Log.d(TAG, "onPostExecuteasfasgasgaghd.skngldnsdkgmsdg;gmlagmasg;lamg;lsamgs;lamsga;lsgm;: " + output);
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            if (mLastError != null) {
-                if (mLastError instanceof UserRecoverableAuthIOException) {
-                    onRecoverableAuthException((UserRecoverableAuthIOException) mLastError);
-                } else {
-                    Log.d(TAG, "onCancelled: " + mLastError.getMessage());
-                    Log.d(TAG, "onCancelled: " + mLastError.getCause());
-                }
-            } else {
-                Log.d(TAG, "onCancelled: " + "canceled");
-            }
-        }
-    }
-
-    private List<String> getDataFromApi() throws IOException {
-        DateTime now = new DateTime(System.currentTimeMillis());
-        List<String> eventStrings = new ArrayList<String>();
-        Events events = mService.events().list("primary")
-                .setMaxResults(10)
-                .setTimeMin(now)
-                .setOrderBy("startTime")
-                .setSingleEvents(true)
-                .execute();
-        List<Event> items = events.getItems();
-
-        for (Event event : items) {
-            DateTime start = event.getStart().getDateTime();
-            if (start == null) {
-                // All-day events don't have start times, so just use
-                // the start date.
-                start = event.getStart().getDate();
-            }
-            eventStrings.add(
-                    String.format("%s (%s)", event.getSummary(), start));
-        }
-        return eventStrings;
     }
 
     public void ReplaceFragment(BaseFragment fragment) {
@@ -355,7 +233,7 @@ public class Home extends BaseActivity {
 
         }*/
 
-       ReplaceFragment(CurrentFragment);
+        ReplaceFragment(CurrentFragment);
     }
 
 }

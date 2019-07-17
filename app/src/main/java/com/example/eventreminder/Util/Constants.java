@@ -2,6 +2,7 @@ package com.example.eventreminder.Util;
 
 import android.text.TextUtils;
 import android.util.Patterns;
+import android.widget.ScrollView;
 
 public class Constants {
     private static Constants constants;
@@ -29,7 +30,9 @@ public class Constants {
         return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
     }
 
-    public String BaseUrl = "http://invent.solutions/thamarat/";
+    public String openWeatherMapAPIKey = "af7b1830541171b1ec00a7f31168e3d7";
+    public String OpenWeatherMapSotrageUrl = "http://openweathermap.org/img/w/10d.png";
+    public String BaseUrl = "http://api.openweathermap.org";
 
 }
 
