@@ -5,4 +5,6 @@
     <string name="please_sign_in">Please sign in to your google account</string>
     <string name="Sign_out_from_facebook">Sign out fro Facebook</string>
     <string name="Sign_out">Sign out</string>
+    <string name="google">Google</string>
+    <string name="facebook" >Facebook</string>
 </resources>

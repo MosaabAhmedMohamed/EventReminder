@@ -1,6 +1,4 @@
-package com.example.eventreminder;
-
-import androidx.appcompat.app.AppCompatActivity;
+package com.example.eventreminder.Views.Activites;
 
 import android.animation.ObjectAnimator;
 import android.content.Intent;
@@ -9,9 +7,8 @@ import android.os.Handler;
 import android.view.animation.LinearInterpolator;
 import android.widget.ProgressBar;
 
-import com.example.eventreminder.Activites.Home;
-import com.example.eventreminder.Activites.Login;
 import com.example.eventreminder.BaseViews.BaseActivity;
+import com.example.eventreminder.R;
 
 public class Splash extends BaseActivity {
 

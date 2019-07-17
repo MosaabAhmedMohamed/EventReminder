@@ -1,4 +1,4 @@
-package com.example.eventreminder.Activites;
+package com.example.eventreminder.Views.Activites;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -6,8 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,8 +15,10 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.eventreminder.BaseViews.BaseActivity;
+import com.example.eventreminder.BaseViews.BaseFragment;
 import com.example.eventreminder.R;
 import com.example.eventreminder.Util.Constants;
+import com.example.eventreminder.Views.Fragments.GoogleEventsList;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -30,6 +32,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
@@ -38,6 +41,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -54,20 +58,36 @@ public class Home extends BaseActivity {
     TextView title;
     @BindView(R.id.menu)
     ImageView menu;
-    @BindView(R.id.fragments)
-    FrameLayout fragments;
     @BindView(R.id.out_from_google_btn)
     Button outFromGooglBtn;
     @BindView(R.id.out_from_facebook_btn)
     Button outFromFacebookBtn;
     @BindView(R.id.drawer_layout)
     DrawerLayout drawerLayout;
+    @BindView(R.id.google_ic)
+    ImageView googleIc;
+    @BindView(R.id.google_nav_tv)
+    TextView googleNavTv;
+    @BindView(R.id.google_nav_layout)
+    RelativeLayout googleNavLayout;
+    @BindView(R.id.facebook_ic)
+    ImageView facebookIc;
+    @BindView(R.id.facebook_nav_tv)
+    TextView facebookNavTv;
+    @BindView(R.id.facebook_nav_layout)
+    RelativeLayout facebookNavLayout;
+
+    private LinkedList<BaseFragment> fragments = new LinkedList<>();
+    private BaseFragment CurrentFragment;
+    private GoogleEventsList googleEventsList;
+
 
     private GoogleSignInClient signInClient;
-    private com.google.api.services.calendar.Calendar mService = null;
+    private Calendar mService = null;
     private GoogleAccountCredential credential;
 
     private static final String[] SCOPES = {CalendarScopes.CALENDAR_READONLY, CalendarScopes.CALENDAR};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +99,8 @@ public class Home extends BaseActivity {
     }
 
     private void init() {
+        googleEventsList = GoogleEventsList.newInstance();
+        CurrentFragment = googleEventsList;
         GoogleSignInAccount acc = new Gson().fromJson(sharedPreferences.getString(Constants.GOOGLE_USER, " "), GoogleSignInAccount.class);
         if (acc != null && acc.getAccount() != null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -104,7 +126,7 @@ public class Home extends BaseActivity {
         new MakeRequestTask(credential).execute();
     }
 
-    @OnClick({R.id.menu, R.id.out_from_google_btn, R.id.out_from_facebook_btn})
+    @OnClick({R.id.menu, R.id.out_from_google_btn, R.id.out_from_facebook_btn, R.id.facebook_nav_layout, R.id.google_nav_layout})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.menu:
@@ -116,16 +138,15 @@ public class Home extends BaseActivity {
                 break;
             case R.id.out_from_facebook_btn:
                 break;
+            case R.id.facebook_nav_layout:
+                onTabSelected(0);
+                break;
+            case R.id.google_nav_layout:
+                onTabSelected(1);
+                break;
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START))
-            drawerLayout.closeDrawer(GravityCompat.START);
-        else
-            super.onBackPressed();
-    }
 
     private void signOutFromGoogle() {
         signInClient.signOut().addOnCompleteListener(task -> finish());
@@ -171,7 +192,7 @@ public class Home extends BaseActivity {
         MakeRequestTask(GoogleAccountCredential credential) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.calendar.Calendar.Builder(
+            mService = new Calendar.Builder(
                     transport, jsonFactory, credential)
                     .setApplicationName("Event Reminder")
                     .build();
@@ -242,6 +263,99 @@ public class Home extends BaseActivity {
                     String.format("%s (%s)", event.getSummary(), start));
         }
         return eventStrings;
+    }
+
+    public void ReplaceFragment(BaseFragment fragment) {
+        fragments.clear();
+        CurrentFragment = fragment;
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragments, fragment, "fragments")
+                .commitAllowingStateLoss();
+    }
+
+    public void PushFragmentToSpecificRes(BaseFragment fragment, int res, boolean addToBackStack) {
+        if (addToBackStack) {
+            fragments.addLast(CurrentFragment);
+            CurrentFragment = fragment;
+        }
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(res, fragment, "fragments")
+                .commitAllowingStateLoss();
+    }
+
+    public void PushFragment(BaseFragment fragment) {
+        fragments.addLast(CurrentFragment);
+        CurrentFragment = fragment;
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragments, fragment, "fragments")
+                .commitAllowingStateLoss();
+    }
+
+    public void PopFragment() {
+        if (!fragments.isEmpty())
+            CurrentFragment = fragments.removeLast();
+        else
+            CurrentFragment = googleEventsList;
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragments, CurrentFragment, "fragments")
+                .commitAllowingStateLoss();
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START))
+            drawerLayout.closeDrawer(GravityCompat.START);
+
+        if (fragments.isEmpty()) {
+            if (CurrentFragment instanceof GoogleEventsList) {
+                if (!sharedPreferences.getBoolean("login", false)) {
+                    startActivity(new Intent(this, Login.class));
+                    finish();
+                } else {
+                    super.onBackPressed();
+                }
+            } else {
+                ReplaceFragment(googleEventsList);
+            }
+        } else {
+            PopFragment();
+        }
+
+    }
+
+
+    private void onTabSelected(int position) {
+
+        if (position == 0) {
+            CurrentFragment = googleEventsList;
+
+            googleNavLayout.setBackgroundColor(getColor(R.color.black));
+            googleNavTv.setTextColor(getColor(R.color.white));
+
+            facebookNavLayout.setBackgroundColor(getColor(R.color.white));
+            facebookNavTv.setTextColor(getColor(R.color.black));
+
+        }
+        /*else if (position == 1) {
+            selectedFragment = allServices;
+
+            medicaMapNavLay.setBackgroundColor(getResources().getColor(R.color.black));
+            bottomNavMapIc.setColorFilter(getResources().getColor(R.color.orange));
+
+            allServicesNavLay.setBackgroundColor(getResources().getColor(R.color.orange));
+            bottomNavServicesIc.setColorFilter(getResources().getColor(R.color.white));
+
+
+        }*/
+
+       ReplaceFragment(CurrentFragment);
     }
 
 }

@@ -1,4 +1,4 @@
-package com.example.eventreminder.Activites;
+package com.example.eventreminder.Views.Activites;
 
 
 import android.content.Intent;
