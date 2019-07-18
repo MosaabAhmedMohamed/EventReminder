@@ -4,6 +4,8 @@ package com.example.eventreminder.Views.Activites;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.eventreminder.BaseViews.BaseActivity;
@@ -33,6 +35,7 @@ public class Login extends BaseActivity {
     SignInButton signInButton;
     private GoogleSignInClient signInClient;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,7 +44,7 @@ public class Login extends BaseActivity {
 
         GoogleSignInAccount acc = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
         if (acc != null && acc.getAccount() != null) {
-           goToHomeAndSaveUser(acc);
+            goToHomeAndSaveUser(acc);
         } else {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestScopes(new Scope(CALENDAR_SCOPE))
@@ -50,18 +53,15 @@ public class Login extends BaseActivity {
             signInClient = GoogleSignIn.getClient(this, gso);
             Toast.makeText(this, R.string.please_sign_in, Toast.LENGTH_SHORT).show();
         }
+
     }
+
 
     @Override
     public void onStart() {
         super.onStart();
     }
 
-    @OnClick(R.id.sign_in_button)
-    public void onViewClicked() {
-        signIn();
-
-    }
     private void signIn() {
         Intent signInIntent = signInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -70,7 +70,6 @@ public class Login extends BaseActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
@@ -84,14 +83,18 @@ public class Login extends BaseActivity {
 
     private void goToHomeAndSaveUser(GoogleSignInAccount account) {
         if (account != null) {
-            editor.putBoolean("login",true);
+            editor.putBoolean("login", true);
             editor.putString(Constants.GOOGLE_USER, new Gson().toJson(account));
             editor.commit();
             startActivity(new Intent(this, Home.class));
             finish();
-        }
-        else {
+        } else {
             Toast.makeText(this, "error occurred", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @OnClick(R.id.sign_in_button)
+    public void onViewClicked(View view) {
+        signIn();
     }
 }
