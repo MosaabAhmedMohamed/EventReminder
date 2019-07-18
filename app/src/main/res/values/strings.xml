@@ -9,4 +9,7 @@
     <string name="facebook" >Facebook</string>
     <string name="accept">Accept</string>
     <string name="reject">Reject</string>
+    <string name="Details">Details : </string>
+    <string name="date">Date : </string>
+    <string name="time">Start time : </string>
 </resources>
