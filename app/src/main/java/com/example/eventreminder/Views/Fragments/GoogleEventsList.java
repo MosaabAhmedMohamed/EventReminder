@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.eventreminder.Async.AcceptGoogleEventsTask;
 import com.example.eventreminder.Async.DeleteGoogleEventTask;
 import com.example.eventreminder.Async.MakeGoogleEventsRequestTask;
 import com.example.eventreminder.BaseViews.BaseFragment;
@@ -40,9 +41,11 @@ import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventAttendee;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +64,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
 
 
     private GoogleSignInAccount acc;
+    private AcceptGoogleEventsTask acceptGoogleEventsTask;
     private DeleteGoogleEventTask deleteGoogleEventTask;
     private MakeGoogleEventsRequestTask makeGoogleEventsRequestTask;
     private GoogleEventsAndForecastModel googleEventsAndForecastModel;
@@ -181,23 +185,22 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                     // All-day events don't have start times, so just use
                     // the start date.
                     start = event.getStart().getDate();
+
+                    //event.setStart(start);
                 }
-                //  Log.d(TAG, "getDataFromApi:   2 " + event.toPrettyString());
+                //Log.d(TAG, "getDataFromApi:   2 " + event.toPrettyString());
                 //  Log.d(TAG, "getDataFromApi: " + String.format("%s (%s)", event.getSummary(), start));
             }
             callEventsListAdapter(events);
-
         }
     }
 
     private void callEventsListAdapter(List<Event> events) {
-        if (googleEventsListAdapter == null)
-        {
+        if (googleEventsListAdapter == null) {
             googleEventsAndForecastModel.setEventsModels(events);
             googleEventsListAdapter = new GoogleEventsListAdapter(this, googleEventsAndForecastModel);
             eventsRecycler.setAdapter(googleEventsListAdapter);
-        }
-        else
+        } else
             googleEventsListAdapter.setUpdatedEvents(events);
     }
 
@@ -222,8 +225,26 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
             Toast.makeText(getActivity(), "you can't accept event that you already created", Toast.LENGTH_SHORT).show();
         } else if (googleEventsAndForecastModel.getEventsModels().get(position).getCreator() == null)
             Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_SHORT).show();
-        else
+        else {
+            List<EventAttendee> attendees = googleEventsAndForecastModel.getEventsModels().get(position).getAttendees();
+            for (int i = 0; i < attendees.size(); i++) {
 
-            Log.d(TAG, "onAcceptEvent: " + position);
+                if (attendees.get(i).getEmail().equals(acc.getEmail())) {
+                    if (attendees.get(i).getResponseStatus().equals("accepted")) {
+                        Toast.makeText(getActivity(), "you already accepted the invention", Toast.LENGTH_SHORT).show();
+                    } else {
+                        attendees.get(i).setResponseStatus("accepted");
+                        googleEventsAndForecastModel.getEventsModels().get(position).setAttendees(attendees);
+                        if (acceptGoogleEventsTask != null)
+                            acceptGoogleEventsTask.cancel(true);
+
+                        acceptGoogleEventsTask = new AcceptGoogleEventsTask(this, googleCalendar, googleEventsAndForecastModel.getEventsModels().get(position));
+                        acceptGoogleEventsTask.execute();
+                    }
+                    break;
+                }
+            }
+
+        }
     }
 }

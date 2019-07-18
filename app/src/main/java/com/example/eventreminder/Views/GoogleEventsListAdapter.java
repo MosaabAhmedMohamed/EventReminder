@@ -1,5 +1,6 @@
 package com.example.eventreminder.Views;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +46,7 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
     private OnEventActionLIstner onEventActionLIstner;
     private GoogleEventsAndForecastModel googleEventsAndForecastModel;
 
-    private String eventFromatedDate, startEventFromatedTime,endEventFromatedTime;
+    private String eventFromatedDate, startEventFromatedTime, endEventFromatedTime;
 
     private RequestOptions requestOptions = new RequestOptions()
             .placeholder(R.drawable.ic_launcher_background);
@@ -66,27 +67,45 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
     @Override
     public void onBindViewHolder(@NonNull EventItemViewHolder holder, int position) {
         Event event = googleEventsAndForecastModel.getEventsModels().get(position);
-        if (event != null) {
-            eventFromatedDate = Constants.getInstance().getFormattedDate(event.getStart().getDateTime().getValue());
-            startEventFromatedTime = Constants.getInstance().getFormattedTime(event.getStart().getDateTime().getValue());
-            endEventFromatedTime = Constants.getInstance().getFormattedTime(event.getEnd().getDateTime().getValue());
-
-            if (googleEventsAndForecastModel.getForecastModels() != null && googleEventsAndForecastModel.getForecastModels().containsKey(eventFromatedDate)) {
-                MainEntity mainEntity = googleEventsAndForecastModel.getForecastModels().get(eventFromatedDate).getMain();
-
-                humidityTv.setText(String.valueOf(mainEntity.getHumidity()));
-                weatherTv.setText(String.valueOf(mainEntity.getTemp()));
-
-                Glide.with(holder.itemView.getContext())
-                        .setDefaultRequestOptions(requestOptions)
-                        .load(Constants.getInstance().OpenWeatherMapSotrageUrl.concat(googleEventsAndForecastModel.getForecastModels().get(eventFromatedDate).getWeather().get(0).getIcon().concat(".png")))
-                        .into(weatherImageView);
-
+        if (event != null ) {
+            if (event.getStart().getDateTime() == null && event.getStart().getDate() == null)
+                return;
+            else if (event.getStart().getDateTime() != null){
+                eventFromatedDate = Constants.getInstance().getFormattedDate(event.getStart().getDateTime().getValue());
+                startEventFromatedTime = Constants.getInstance().getFormattedTime(event.getStart().getDateTime().getValue());
+                endEventFromatedTime = Constants.getInstance().getFormattedTime(event.getEnd().getDateTime().getValue());
+                eventTimeTv.append(startEventFromatedTime.concat("  ").concat("End Time : ").concat(endEventFromatedTime));
             }
+            else
+            {
+
+                eventFromatedDate = Constants.getInstance().getFormattedDate(event.getStart().getDate().getValue());
+               // startEventFromatedTime = Constants.getInstance().getFormattedTime(event.getStart().getDateTime().getValue());
+               // endEventFromatedTime = Constants.getInstance().getFormattedTime(event.getEnd().getDateTime().getValue());
+                eventTimeTv.setText("no time for this event");
+            }
+
+
+            setWeatherData(holder, eventFromatedDate);
 
             eventDetialTv.append(event.getSummary());
             eventDateTv.append(eventFromatedDate);
-            eventTimeTv.append(startEventFromatedTime.concat("  ").concat("End Time : ").concat(endEventFromatedTime));
+
+        }
+    }
+
+    private void setWeatherData(EventItemViewHolder holder, String eventFromatedDate) {
+        if (googleEventsAndForecastModel.getForecastModels() != null && googleEventsAndForecastModel.getForecastModels().containsKey(eventFromatedDate)) {
+            MainEntity mainEntity = googleEventsAndForecastModel.getForecastModels().get(eventFromatedDate).getMain();
+
+            humidityTv.setText(String.valueOf(mainEntity.getHumidity()));
+            weatherTv.setText(String.valueOf(mainEntity.getTemp()));
+
+            Glide.with(holder.itemView.getContext())
+                    .setDefaultRequestOptions(requestOptions)
+                    .load(Constants.getInstance().OpenWeatherMapSotrageUrl.concat(googleEventsAndForecastModel.getForecastModels().get(eventFromatedDate).getWeather().get(0).getIcon().concat(".png")))
+                    .into(weatherImageView);
+
         }
     }
 

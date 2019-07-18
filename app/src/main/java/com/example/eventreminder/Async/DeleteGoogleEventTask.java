@@ -1,7 +1,6 @@
 package com.example.eventreminder.Async;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.example.eventreminder.Views.Fragments.GoogleEventsList;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -14,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
-    private static final String TAG = "DeleteGoogleEventTask";
+    //private static final String TAG = "DeleteGoogleEventTask";
     private Calendar googleCalendar;
     private Exception mLastError = null;
     private String eventId ;
@@ -31,10 +30,10 @@ public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
     protected List<Event> doInBackground(Void... params) {
         try {
             googleCalendar.events().delete("primary", eventId).execute();
-            Log.d(TAG, "doInBackground: ");
+           // Log.d(TAG, "doInBackground: ");
         } catch (IOException e) {
             e.printStackTrace();
-            Log.d(TAG, "doInBackground: "+e.getMessage());
+          //  Log.d(TAG, "doInBackground: "+e.getMessage());
         }
         try {
 
@@ -80,10 +79,10 @@ public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
             if (mLastError instanceof UserRecoverableAuthIOException) {
                 googleEventsList.onRecoverableAuthException((UserRecoverableAuthIOException) mLastError);
             } else {
-                Log.d(TAG, "onCancelled: " + mLastError.getMessage());
+              //  Log.d(TAG, "onCancelled: " + mLastError.getMessage());
             }
         } else {
-            Log.d(TAG, "onCancelled: " + "canceled");
+            //Log.d(TAG, "onCancelled: " + "canceled");
         }
     }
 
@@ -96,7 +95,7 @@ public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
                 .setMaxResults(10)
                 .setTimeMin(now)
                 .setOrderBy("startTime").setSingleEvents(true).execute();
-        Log.d(TAG, "getDataFromApi: " + events.getItems().toString());
+      //  Log.d(TAG, "getDataFromApi: " + events.getItems().toString());
         return events.getItems();
     }
 }

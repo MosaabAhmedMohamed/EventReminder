@@ -2,31 +2,46 @@ package com.example.eventreminder.Async;
 
 import android.os.AsyncTask;
 import android.util.Log;
+
 import com.example.eventreminder.Views.Fragments.GoogleEventsList;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
+
 import java.io.IOException;
 import java.util.List;
 
-public class MakeGoogleEventsRequestTask extends AsyncTask<Void, Void, List<Event>> {
-    private static final String TAG = "MakeGoogleEventsRequest";
-
+public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
+    private static final String TAG = "DeleteGoogleEventTask";
     private Calendar googleCalendar;
     private Exception mLastError = null;
-
+    private Event calendarEvent;
     private GoogleEventsList googleEventsList;
-    public MakeGoogleEventsRequestTask(GoogleEventsList googleEventsList, Calendar calendar) {
+
+
+    public AcceptGoogleEventsTask(GoogleEventsList googleEventsList, Calendar googleCalendar, Event event) {
         this.googleEventsList = googleEventsList;
-        googleCalendar = calendar;
+        this.googleCalendar = googleCalendar;
+        this.calendarEvent = event;
 
-
+        Log.d(TAG, "AcceptGoogleEventsTask: "+event.getAttendees().toString());
     }
 
     @Override
     protected List<Event> doInBackground(Void... params) {
+
+        try {
+            googleCalendar.events().update("primary", calendarEvent.getId(),calendarEvent).execute();
+            Log.d(TAG, "doInBackground: ");
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG, "doInBackground: ");
+            Log.d(TAG, "doInBackground: "+e.getMessage());
+        }
+
+
         try {
 
             return getDataFromApi();
@@ -71,7 +86,7 @@ public class MakeGoogleEventsRequestTask extends AsyncTask<Void, Void, List<Even
             if (mLastError instanceof UserRecoverableAuthIOException) {
                 googleEventsList.onRecoverableAuthException((UserRecoverableAuthIOException) mLastError);
             } else {
-                Log.d(TAG, "onCancelled: " + mLastError.getMessage());
+                  Log.d(TAG, "onCancelled: " + mLastError.getMessage());
             }
         } else {
             Log.d(TAG, "onCancelled: " + "canceled");
@@ -87,7 +102,7 @@ public class MakeGoogleEventsRequestTask extends AsyncTask<Void, Void, List<Even
                 .setMaxResults(10)
                 .setTimeMin(now)
                 .setOrderBy("startTime").setSingleEvents(true).execute();
-
+        //  Log.d(TAG, "getDataFromApi: " + events.getItems().toString());
         return events.getItems();
     }
 }
