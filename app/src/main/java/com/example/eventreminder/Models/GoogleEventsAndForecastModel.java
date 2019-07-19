@@ -2,14 +2,21 @@ package com.example.eventreminder.Models;
 
 import com.google.api.services.calendar.model.Event;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class GoogleEventsAndForecastModel {
 
-    private HashMap<Integer,ListEntity> forecastModelsMap;
+    private HashMap<Integer, ListEntity> forecastModelsMap;
 
     private List<Event> eventsModels;
+    private ArrayList<EventDateTimeModel> eventDateTimeModels;
+
+    public GoogleEventsAndForecastModel() {
+        eventDateTimeModels = new ArrayList();
+    }
+
 
 
     public HashMap<Integer, ListEntity> getForecastModels() {
@@ -27,4 +34,9 @@ public class GoogleEventsAndForecastModel {
     public void setEventsModels(List<Event> eventsModels) {
         this.eventsModels = eventsModels;
     }
+
+    public ArrayList<EventDateTimeModel> getEventDateTimeModels() {
+        return eventDateTimeModels;
+    }
+
 }

@@ -10,17 +10,12 @@ import android.widget.ScrollView;
 
 import java.security.Key;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
-import java.util.TimeZone;
 
-import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class Constants {
     private static Constants constants;
@@ -39,10 +34,13 @@ public class Constants {
     public static final int RC_RECOVERABLE = 9002;
 
 
+
     public static final String CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar";
     public static final String EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events";
     public static final String GOOGLE_USER = "GOOGLE_SUER";
     public static final String FACEBOOK_SUER = "FACEBOOK_USER";
+    public static final String EVENT_ONE = "EVENT_ONE";
+    public static final String EVENT_TWO = "EVENT_ONE";
 
     public boolean isValidEmail(CharSequence target) {
         return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
@@ -60,18 +58,28 @@ public class Constants {
         return formatted;
     }
 
-    public static String convertUnixToDay(long dt) {
+    public String convertUnixToDay(long dt) {
         Date date = new Date(dt * 1000L);
         SimpleDateFormat sdf = new SimpleDateFormat("dd");
         String formatted = sdf.format(date);
         return formatted;
     }
 
-    public static String convertUnixToHour(long dt) {
+    public String convertUnixToHour(long dt) {
         Date date = new Date(dt * 1000L);
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         String formatted = sdf.format(date);
         return formatted;
+    }
+
+    public int convertUnixToSeconds(long dt) {
+        int seconds, hour, minute;
+        String hoursAndSeconds = convertUnixToHour(dt);
+        String[] hAndm = new String[2];
+        hAndm = hoursAndSeconds.split(":");
+        hour = Integer.parseInt(hAndm[0]);
+        minute = Integer.parseInt(hAndm[1]);
+        return seconds = (minute * 60) + (hour *3600);
     }
 
 

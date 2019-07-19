@@ -1,6 +1,7 @@
 package com.example.eventreminder.Views.Adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.eventreminder.Models.EventDateTimeModel;
 import com.example.eventreminder.Models.GoogleEventsAndForecastModel;
 import com.example.eventreminder.Models.MainEntity;
 import com.example.eventreminder.R;
@@ -57,6 +59,7 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
 
     private String eventFormattedDate, startEventFormattedTime, endEventFormattedTime, loggedInUserEmail;
     private long eventDateTime;
+    private boolean isDealingWithOverLap = false;
 
     private RequestOptions requestOptions = new RequestOptions()
             .placeholder(R.drawable.ic_launcher_background);
@@ -86,17 +89,24 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
             eventDateTime = 0;
 
             if (!event.getCreator().getEmail().equals(loggedInUserEmail) && event.getAttendees() != null)
-               checkEventInvitationStatus(holder.itemView.getContext(),event.getAttendees());
+                checkEventInvitationStatus(holder.itemView.getContext(), event.getAttendees());
 
             if (event.getStart().getDateTime() == null && event.getStart().getDate() == null) {
                 setVisibility(false, holder.itemView);
                 return;
-            } else if (event.getStart().getDateTime() != null && event.getStart().getDateTime().getValue() != 0) {
+            } else if (event.getStart().getDateTime() != null &&
+                    event.getStart().getDateTime().getValue() != 0 &&
+                    event.getEnd().getDateTime().getValue() != 0) {
+
                 eventDateTime = event.getStart().getDateTime().getValue();
                 eventFormattedDate = Constants.getInstance().getFormattedDate(event.getStart().getDateTime().getValue());
+
+                if (!isDealingWithOverLap)
+                    cheekForEventOverlapping(eventFormattedDate, event, position);
+
                 startEventFormattedTime = Constants.getInstance().getFormattedTime(event.getStart().getDateTime().getValue());
                 endEventFormattedTime = Constants.getInstance().getFormattedTime(event.getEnd().getDateTime().getValue());
-                eventTimeTv.setText("Start time".concat(startEventFormattedTime).concat("  ").concat("End Time : ").concat(endEventFormattedTime));
+                eventTimeTv.setText("Start time : ".concat(startEventFormattedTime).concat("  ").concat("End Time : ").concat(endEventFormattedTime));
                 setWeatherData(holder, Constants.getInstance().getClosestTimeUnix(googleEventsAndForecastModel.getForecastModels().keySet(), eventDateTime));
                 eventDetialTv.setText(holder.itemView.getContext().getResources().getString(R.string.Details).concat(event.getSummary()));
                 eventDateTv.setText(holder.itemView.getContext().getResources().getString(R.string.date).concat(eventFormattedDate));
@@ -111,11 +121,30 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
         }
     }
 
+    private void cheekForEventOverlapping(String eventFormattedDate, Event event, int position) {
+        for (EventDateTimeModel eventDateTimeModel : googleEventsAndForecastModel.getEventDateTimeModels()) {
+            if (eventDateTimeModel.getDay().equals(eventFormattedDate) &&
+                    !eventDateTimeModel.getEvent().getId().equals(event.getId()) &&
+                    !eventDateTimeModel.isDiscard()) {
+
+                int startTimeEventInList = Constants.getInstance().convertUnixToSeconds(event.getStart().getDateTime().getValue());
+                int endTimeEventInList = Constants.getInstance().convertUnixToSeconds(event.getEnd().getDateTime().getValue());
+                if (startTimeEventInList <= eventDateTimeModel.getStartTime()) {
+                    if (startTimeEventInList <= eventDateTimeModel.getEndTime() || startTimeEventInList >= eventDateTimeModel.getEndTime()) {
+                        onEventActionLIstner.onEventOverlapped(new EventDateTimeModel(eventFormattedDate,
+                                startTimeEventInList, endTimeEventInList, event), eventDateTimeModel, position);
+                        isDealingWithOverLap = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+
     private void checkEventInvitationStatus(Context context, List<EventAttendee> attendees) {
-        for (int i =0;i<attendees.size();i++)
-        {
-            if (attendees.get(i).getEmail().equals(loggedInUserEmail) && !attendees.get(i).getResponseStatus().equals("accepted"))
-            {
+        for (int i = 0; i < attendees.size(); i++) {
+            if (attendees.get(i).getEmail().equals(loggedInUserEmail) && !attendees.get(i).getResponseStatus().equals("accepted")) {
                 eventStatusColor.setBackground(context.getDrawable(R.drawable.yeallow_circle_background_shape));
                 break;
             }

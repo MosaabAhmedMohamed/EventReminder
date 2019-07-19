@@ -21,16 +21,19 @@ import com.example.eventreminder.Async.AcceptGoogleEventsTask;
 import com.example.eventreminder.Async.DeleteGoogleEventTask;
 import com.example.eventreminder.Async.MakeGoogleEventsRequestTask;
 import com.example.eventreminder.BaseViews.BaseFragment;
+import com.example.eventreminder.Models.EventDateTimeModel;
 import com.example.eventreminder.Models.GoogleEventsAndForecastModel;
 import com.example.eventreminder.Models.ListEntity;
 import com.example.eventreminder.R;
 import com.example.eventreminder.Requests.Responses.WeatherResponse;
 import com.example.eventreminder.Util.Constants;
 import com.example.eventreminder.Util.OnEventActionLIstner;
+import com.example.eventreminder.Util.OnHandelOverlappingListner;
 import com.example.eventreminder.ViewModels.GoogleListViewModel;
 import com.example.eventreminder.Views.Activites.Home;
 import com.example.eventreminder.Views.Activites.Login;
 import com.example.eventreminder.Views.Adapters.GoogleEventsListAdapter;
+import com.example.eventreminder.Views.Dialog.OverlappingDailog;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -39,7 +42,6 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.DateTime;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
@@ -48,6 +50,7 @@ import com.google.api.services.calendar.model.EventAttendee;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -61,7 +64,7 @@ import butterknife.ButterKnife;
 import static android.app.Activity.RESULT_OK;
 import static com.example.eventreminder.Util.Constants.RC_RECOVERABLE;
 
-public class GoogleEventsList extends BaseFragment implements OnEventActionLIstner, SwipeRefreshLayout.OnRefreshListener {
+public class GoogleEventsList extends BaseFragment implements OnEventActionLIstner, SwipeRefreshLayout.OnRefreshListener, OnHandelOverlappingListner {
     private static final String TAG = "GoogleEventsList";
     @BindView(R.id.events_recycler)
     RecyclerView eventsRecycler;
@@ -154,7 +157,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
             credential.setSelectedAccountName(acc.getAccount().name);
             initCalendarAndGetEventsFromApi(credential);
         } else if (getActivity() != null) {
-            editor.remove("user");
+            editor.remove(Constants.GOOGLE_USER);
             editor.putBoolean("login", false);
             editor.commit();
             startActivity(new Intent(getActivity(), Login.class));
@@ -196,15 +199,17 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         swipeRefreshLayout.setRefreshing(false);
         if (events != null) {
             for (Event event : events) {
-                DateTime start = event.getStart().getDateTime();
-                if (start == null) {
-                    // All-day events don't have start times, so just use
-                    // the start date.
-                    start = event.getStart().getDate();
+                if (event.getStart().getDateTime() != null &&
+                        event.getStart().getDateTime().getValue() != 0 &&
+                        event.getEnd().getDateTime().getValue() != 0) {
 
-                    //event.setStart(start);
+                    String date = Constants.getInstance().getFormattedDate(event.getStart().getDateTime().getValue());
+                    int eventStart = Constants.getInstance().convertUnixToSeconds(event.getStart().getDateTime().getValue());
+                    int eventEnd = Constants.getInstance().convertUnixToSeconds(event.getEnd().getDateTime().getValue());
+
+                    googleEventsAndForecastModel.getEventDateTimeModels().add(new EventDateTimeModel(date,eventStart,eventEnd,event));
                 }
-                Log.d(TAG, "getDataFromApi:   2 " + event.toPrettyString());
+                //Log.d(TAG, "getDataFromApi:   2 " + event.toPrettyString());
                 //  Log.d(TAG, "getDataFromApi: " + String.format("%s (%s)", event.getSummary(), start));
             }
         }
@@ -287,6 +292,18 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
     }
 
     @Override
+    public void onEventOverlapped(EventDateTimeModel firstEvent, EventDateTimeModel secondEvent, int position) {
+        ArrayList<EventDateTimeModel> eventDateTimeModels = new ArrayList<>();
+        eventDateTimeModels.add(firstEvent);
+        eventDateTimeModels.add(secondEvent);
+        OverlappingDailog overlappingDailog = OverlappingDailog.newInstance(eventDateTimeModels,position);
+        overlappingDailog.setTargetFragment(GoogleEventsList.this, 1);
+        if (getFragmentManager() != null)
+            overlappingDailog.show(getFragmentManager(), "selectDialog");
+    }
+
+
+    @Override
     public void onRefresh() {
         if (!Constants.getInstance().isDeviceOnline(getActivity())) {
             checkInternetSnackbar();
@@ -340,4 +357,9 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         scheduledExecutorService = null;
     }
 
+    @Override
+    public void onHandel(boolean status, EventDateTimeModel selectedEventToReschedule ,int position ) {
+
+        Log.d(TAG, "onHandel: ");
+    }
 }
