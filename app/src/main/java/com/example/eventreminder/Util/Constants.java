@@ -1,16 +1,26 @@
 package com.example.eventreminder.Util;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.ScrollView;
 
+import java.security.Key;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
+
+import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class Constants {
     private static Constants constants;
@@ -44,7 +54,7 @@ public class Constants {
 
     public String convertUnixToDate(long dt) {
         Date date = new Date(dt * 1000L);
-       // SimpleDateFormat sdf = new SimpleDateFormat("HH:mm EEE dd MM YYYY");
+        // SimpleDateFormat sdf = new SimpleDateFormat("HH:mm EEE dd MM YYYY");
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         String formatted = sdf.format(date);
         return formatted;
@@ -106,6 +116,30 @@ public class Constants {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(dt);
         return df.format(cal.getTime().getTime());
+    }
+
+    public int getClosestTimeUnix(Set<Integer> keys, long eventDateTime) {
+        ArrayList<Integer> keysList = new ArrayList<>(keys);
+
+
+        int min = Integer.MAX_VALUE;
+        int closest = (int) eventDateTime;
+
+        for (int v : keysList) {
+            final int diff = (int) Math.abs(v - eventDateTime);
+            if (diff < min) {
+                min = diff;
+                closest = v;
+            }
+        }
+        return closest;
+    }
+
+    public boolean isDeviceOnline(Context context) {
+        ConnectivityManager connMgr =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
     }
 
 }

@@ -3,18 +3,19 @@ package com.example.eventreminder.BaseViews;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 
 import com.example.eventreminder.R;
+import com.google.android.material.snackbar.Snackbar;
 
 public class BaseActivity extends AppCompatActivity {
-
-    //private static final String TAG = "BaseActivity";
     public SharedPreferences sharedPreferences;
     public SharedPreferences.Editor editor;
 
@@ -37,6 +38,15 @@ public class BaseActivity extends AppCompatActivity {
 
     public void showProgressBar(boolean visibility) {
         mProgressBar.setVisibility(visibility ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    public void showIsOfflineSnackbar() {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.activity_content), "please check you'r internet connection", Snackbar.LENGTH_LONG);
+        View sbView = snackbar.getView();
+        sbView.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
+        snackbar.setActionTextColor(getColor(R.color.white));
+        snackbar.setDuration(5000);
+        snackbar.show();
     }
 }
 

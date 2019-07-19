@@ -84,7 +84,7 @@ public class MakeGoogleEventsRequestTask extends AsyncTask<Void, Void, List<Even
         DateTime now = new DateTime(System.currentTimeMillis());
         Events events = googleCalendar.events()
                 .list("primary")
-                .setMaxResults(10)
+                .setMaxResults(20)
                 .setTimeMin(now)
                 .setOrderBy("startTime").setSingleEvents(true).execute();
 

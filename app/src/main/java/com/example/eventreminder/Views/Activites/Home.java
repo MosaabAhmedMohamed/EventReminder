@@ -6,8 +6,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.example.eventreminder.BaseViews.BaseActivity;
 import com.example.eventreminder.BaseViews.BaseFragment;
 import com.example.eventreminder.R;
@@ -19,10 +21,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
 import com.google.gson.Gson;
+
 import java.util.LinkedList;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
 import static com.example.eventreminder.Util.Constants.CALENDAR_SCOPE;
 
 public class Home extends BaseActivity {
@@ -72,16 +77,20 @@ public class Home extends BaseActivity {
 
     @OnClick({R.id.menu, R.id.out_from_google_btn})
     public void onViewClicked(View view) {
-        switch (view.getId()) {
-            case R.id.menu:
-                drawerLayout.openDrawer(GravityCompat.START);
-                break;
-            case R.id.out_from_google_btn:
-                signOutFromGoogle();
-                drawerLayout.openDrawer(GravityCompat.START);
-                break;
+        if (view.getId() == R.id.menu)
+            drawerLayout.openDrawer(GravityCompat.START);
+        else if (!Constants.getInstance().isDeviceOnline(this))
+            showIsOfflineSnackbar();
+        else {
+            switch (view.getId()) {
+                case R.id.out_from_google_btn:
+                    signOutFromGoogle();
+                    drawerLayout.openDrawer(GravityCompat.START);
+                    break;
 
+            }
         }
+
     }
 
 

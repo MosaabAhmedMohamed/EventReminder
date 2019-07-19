@@ -7,16 +7,16 @@ import java.util.List;
 
 public class GoogleEventsAndForecastModel {
 
-    private HashMap<String,ListEntity> forecastModelsMap;
+    private HashMap<Integer,ListEntity> forecastModelsMap;
 
     private List<Event> eventsModels;
 
 
-    public HashMap<String, ListEntity> getForecastModels() {
+    public HashMap<Integer, ListEntity> getForecastModels() {
         return forecastModelsMap;
     }
 
-    public void setForecastModels(HashMap<String, ListEntity> forecastModels) {
+    public void setForecastModels(HashMap<Integer, ListEntity> forecastModels) {
         this.forecastModelsMap = forecastModels;
     }
 

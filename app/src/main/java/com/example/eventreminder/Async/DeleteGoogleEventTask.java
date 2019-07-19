@@ -92,7 +92,7 @@ public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
         DateTime now = new DateTime(System.currentTimeMillis());
         Events events = googleCalendar.events()
                 .list("primary")
-                .setMaxResults(10)
+                .setMaxResults(20)
                 .setTimeMin(now)
                 .setOrderBy("startTime").setSingleEvents(true).execute();
       //  Log.d(TAG, "getDataFromApi: " + events.getItems().toString());

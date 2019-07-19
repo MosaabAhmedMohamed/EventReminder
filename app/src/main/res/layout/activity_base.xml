@@ -5,7 +5,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".BaseViews.BaseActivity">
+    tools:context=".BaseViews.BaseActivity"
+    android:id="@+id/base"
+    >
 
     <FrameLayout
         android:id="@+id/activity_content"

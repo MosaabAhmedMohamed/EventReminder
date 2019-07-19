@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.eventreminder.Async.AcceptGoogleEventsTask;
 import com.example.eventreminder.Async.DeleteGoogleEventTask;
@@ -27,7 +29,8 @@ import com.example.eventreminder.Util.Constants;
 import com.example.eventreminder.Util.OnEventActionLIstner;
 import com.example.eventreminder.ViewModels.GoogleListViewModel;
 import com.example.eventreminder.Views.Activites.Home;
-import com.example.eventreminder.Views.GoogleEventsListAdapter;
+import com.example.eventreminder.Views.Activites.Login;
+import com.example.eventreminder.Views.Adapters.GoogleEventsListAdapter;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -45,7 +48,6 @@ import com.google.api.services.calendar.model.EventAttendee;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -56,10 +58,14 @@ import butterknife.ButterKnife;
 import static android.app.Activity.RESULT_OK;
 import static com.example.eventreminder.Util.Constants.RC_RECOVERABLE;
 
-public class GoogleEventsList extends BaseFragment implements OnEventActionLIstner {
+public class GoogleEventsList extends BaseFragment implements OnEventActionLIstner, SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = "GoogleEventsList";
     @BindView(R.id.events_recycler)
     RecyclerView eventsRecycler;
+    @BindView(R.id.list_view_status_tv)
+    TextView listViewStatusTv;
+    @BindView(R.id.swipe_refresh_layout)
+    SwipeRefreshLayout swipeRefreshLayout;
     private View view;
 
 
@@ -85,7 +91,10 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         if (view == null) {
             view = inflater.inflate(R.layout.events_list, container, false);
             ButterKnife.bind(this, view);
-            init();
+            if (!Constants.getInstance().isDeviceOnline(getActivity()))
+                checkInternetSnackbar();
+            else
+                init();
 
         }
         return view;
@@ -96,41 +105,39 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         eventsRecycler.setHasFixedSize(true);
         eventsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
         googleEventsAndForecastModel = new GoogleEventsAndForecastModel();
-
         acc = new Gson().fromJson(sharedPreferences.getString(Constants.GOOGLE_USER, " "), GoogleSignInAccount.class);
-        getUserData(acc);
         subScribeToObserver();
+        initRefreshLayout();
+    }
+
+    private void initRefreshLayout() {
+        swipeRefreshLayout.setColorSchemeResources(
+                android.R.color.black,
+                android.R.color.holo_red_light,
+                android.R.color.darker_gray);
+        swipeRefreshLayout.setOnRefreshListener(this);
     }
 
     private void subScribeToObserver() {
         showProgressBar(true);
-        if (googleListViewModel.getWeatherResponseMutableLiveData() == null) {
-            googleListViewModel.getForCastData("cairo", Constants.getInstance().openWeatherMapAPIKey, "40").observe(this, new Observer<WeatherResponse>() {
-                @Override
-                public void onChanged(WeatherResponse weatherResponse) {
-                    if (weatherResponse != null && weatherResponse.getCod().equals("200")) {
-                        Log.d(TAG, "onChanged: 1" + weatherResponse.getList().size());
-                        applayKeyValuePairForDateAndModel(weatherResponse.getList());
-                    } else {
-                        Toast.makeText(getActivity(), "errorr", Toast.LENGTH_SHORT).show();
+        googleListViewModel.getForCastData("cairo", Constants.getInstance().openWeatherMapAPIKey, "40")
+                .observe(this, new Observer<WeatherResponse>() {
+                    @Override
+                    public void onChanged(WeatherResponse weatherResponse) {
+                        if (weatherResponse != null && weatherResponse.getCod().equals("200")) {
+                            applyKeyValuePairForDateAndModel(weatherResponse.getList());
+                            getUserData(acc);
+                        } else {
+                            Toast.makeText(getActivity(), "errorr", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
-            });
-        } else {
-            googleListViewModel.getWeatherResponseMutableLiveData().observe(this, new Observer<WeatherResponse>() {
-                @Override
-                public void onChanged(WeatherResponse weatherResponse) {
-                    Log.d(TAG, "onChanged: 2" + weatherResponse.getList().size());
-
-                }
-            });
-        }
+                });
     }
 
-    private void applayKeyValuePairForDateAndModel(List<ListEntity> weatherList) {
-        HashMap<String, ListEntity> forecastModelsMap = new HashMap<>();
+    private void applyKeyValuePairForDateAndModel(List<ListEntity> weatherList) {
+        HashMap<Integer, ListEntity> forecastModelsMap = new HashMap<>();
         for (int i = 0; i < weatherList.size(); i++) {
-            forecastModelsMap.put(Constants.getInstance().convertUnixToDate(weatherList.get(i).getDt()), weatherList.get(i));
+            forecastModelsMap.put(weatherList.get(i).getDt(), weatherList.get(i));
         }
         googleEventsAndForecastModel.setForecastModels(forecastModelsMap);
     }
@@ -141,9 +148,12 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                     Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
             credential.setSelectedAccountName(acc.getAccount().name);
             initCalendarAndGetEventsFromApi(credential);
-        } else {
-          /*  startActivity(new Intent(this, Login.class));
-            finish();*/
+        } else if (getActivity() != null) {
+            editor.remove("user");
+            editor.putBoolean("login", false);
+            editor.commit();
+            startActivity(new Intent(getActivity(), Login.class));
+            getActivity().finish();
         }
     }
 
@@ -178,6 +188,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
     }
 
     public void getEvents(List<Event> events) throws IOException {
+        swipeRefreshLayout.setRefreshing(false);
         if (events != null) {
             for (Event event : events) {
                 DateTime start = event.getStart().getDateTime();
@@ -188,18 +199,26 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
 
                     //event.setStart(start);
                 }
-                //Log.d(TAG, "getDataFromApi:   2 " + event.toPrettyString());
+                Log.d(TAG, "getDataFromApi:   2 " + event.toPrettyString());
                 //  Log.d(TAG, "getDataFromApi: " + String.format("%s (%s)", event.getSummary(), start));
             }
-            callEventsListAdapter(events);
         }
+        callEventsListAdapter(events);
     }
 
     private void callEventsListAdapter(List<Event> events) {
         if (googleEventsListAdapter == null) {
-            googleEventsAndForecastModel.setEventsModels(events);
-            googleEventsListAdapter = new GoogleEventsListAdapter(this, googleEventsAndForecastModel);
-            eventsRecycler.setAdapter(googleEventsListAdapter);
+            if (events == null || events.size() == 0) {
+                listViewStatusTv.setVisibility(View.VISIBLE);
+                listViewStatusTv.setText("you don't have any events yet");
+            } else {
+                listViewStatusTv.setVisibility(View.GONE);
+                eventsRecycler.setVisibility(View.VISIBLE);
+                googleEventsAndForecastModel.setEventsModels(events);
+                googleEventsListAdapter = new GoogleEventsListAdapter(this, googleEventsAndForecastModel);
+                eventsRecycler.setAdapter(googleEventsListAdapter);
+            }
+
         } else
             googleEventsListAdapter.setUpdatedEvents(events);
     }
@@ -209,9 +228,16 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
             ((Home) getActivity()).showProgressBar(visibility);
     }
 
+    private void checkInternetSnackbar() {
+        if (getActivity() != null && isAdded())
+            ((Home) getActivity()).showIsOfflineSnackbar();
+    }
+
     @Override
     public void onDeleteEvent(String id) {
-        if (deleteGoogleEventTask != null)
+        if (!Constants.getInstance().isDeviceOnline(getActivity()))
+            checkInternetSnackbar();
+        else if (deleteGoogleEventTask != null)
             deleteGoogleEventTask.cancel(true);
 
         deleteGoogleEventTask = new DeleteGoogleEventTask(this, googleCalendar, id);
@@ -221,30 +247,42 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
 
     @Override
     public void onAcceptEvent(int position) {
-        if (googleEventsAndForecastModel.getEventsModels().get(position).getCreator().getEmail().equals(acc.getEmail())) {
-            Toast.makeText(getActivity(), "you can't accept event that you already created", Toast.LENGTH_SHORT).show();
-        } else if (googleEventsAndForecastModel.getEventsModels().get(position).getCreator() == null)
-            Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_SHORT).show();
+        if (!Constants.getInstance().isDeviceOnline(getActivity()))
+            checkInternetSnackbar();
         else {
-            List<EventAttendee> attendees = googleEventsAndForecastModel.getEventsModels().get(position).getAttendees();
-            for (int i = 0; i < attendees.size(); i++) {
+            if (googleEventsAndForecastModel.getEventsModels().get(position).getCreator().getEmail().equals(acc.getEmail())) {
+                Toast.makeText(getActivity(), "you can't accept event that you already created", Toast.LENGTH_SHORT).show();
+            } else if (googleEventsAndForecastModel.getEventsModels().get(position).getCreator() == null)
+                Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_SHORT).show();
+            else {
+                List<EventAttendee> attendees = googleEventsAndForecastModel.getEventsModels().get(position).getAttendees();
+                for (int i = 0; i < attendees.size(); i++) {
 
-                if (attendees.get(i).getEmail().equals(acc.getEmail())) {
-                    if (attendees.get(i).getResponseStatus().equals("accepted")) {
-                        Toast.makeText(getActivity(), "you already accepted the invention", Toast.LENGTH_SHORT).show();
-                    } else {
-                        attendees.get(i).setResponseStatus("accepted");
-                        googleEventsAndForecastModel.getEventsModels().get(position).setAttendees(attendees);
-                        if (acceptGoogleEventsTask != null)
-                            acceptGoogleEventsTask.cancel(true);
+                    if (attendees.get(i).getEmail().equals(acc.getEmail())) {
+                        if (attendees.get(i).getResponseStatus().equals("accepted")) {
+                            Toast.makeText(getActivity(), "you already accepted the invention", Toast.LENGTH_SHORT).show();
+                        } else {
+                            attendees.get(i).setResponseStatus("accepted");
+                            googleEventsAndForecastModel.getEventsModels().get(position).setAttendees(attendees);
+                            if (acceptGoogleEventsTask != null)
+                                acceptGoogleEventsTask.cancel(true);
 
-                        acceptGoogleEventsTask = new AcceptGoogleEventsTask(this, googleCalendar, googleEventsAndForecastModel.getEventsModels().get(position));
-                        acceptGoogleEventsTask.execute();
+                            acceptGoogleEventsTask = new AcceptGoogleEventsTask(this, googleCalendar, googleEventsAndForecastModel.getEventsModels().get(position));
+                            acceptGoogleEventsTask.execute();
+                        }
+                        break;
                     }
-                    break;
                 }
             }
-
         }
+
+    }
+
+    @Override
+    public void onRefresh() {
+        if (googleEventsAndForecastModel.getEventsModels() != null)
+            googleEventsAndForecastModel.getEventsModels().clear();
+        swipeRefreshLayout.setRefreshing(true);
+        getUserData(acc);
     }
 }
