@@ -21,7 +21,6 @@ import com.example.eventreminder.Util.Constants;
 import com.example.eventreminder.Util.OnEventActionLIstner;
 import com.google.api.services.calendar.model.Event;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -42,7 +41,7 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
     @BindView(R.id.weather_image_view)
     ImageView weatherImageView;
     @BindView(R.id.weather_tv)
-    TextView weatherTv;
+    TextView tempTv;
     @BindView(R.id.humidity_tv)
     TextView humidityTv;
     @BindView(R.id.view2)
@@ -55,7 +54,6 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
 
     private String eventFormattedDate, startEventFormattedTime, endEventFormattedTime;
     private long eventDateTime;
-    //private List<String> eventsId = new ArrayList<>();
 
     private RequestOptions requestOptions = new RequestOptions()
             .placeholder(R.drawable.ic_launcher_background);
@@ -77,18 +75,16 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
     public void onBindViewHolder(@NonNull EventItemViewHolder holder, int position) {
         holder.setIsRecyclable(false);
         Event event = googleEventsAndForecastModel.getEventsModels().get(position);
-        if (event != null ) {
+        if (event != null) {
             eventFormattedDate = null;
             startEventFormattedTime = null;
             endEventFormattedTime = null;
             eventDateTime = 0;
-           // eventsId.add(event.getId());
+
             if (event.getStart().getDateTime() == null && event.getStart().getDate() == null) {
                 setVisibility(false, holder.itemView);
                 return;
             } else if (event.getStart().getDateTime() != null && event.getStart().getDateTime().getValue() != 0) {
-                Log.d(TAG, "onBindViewHolder: 1" + event.getSummary());
-
                 eventDateTime = event.getStart().getDateTime().getValue();
                 eventFormattedDate = Constants.getInstance().getFormattedDate(event.getStart().getDateTime().getValue());
                 startEventFormattedTime = Constants.getInstance().getFormattedTime(event.getStart().getDateTime().getValue());
@@ -99,8 +95,6 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
                 eventDateTv.setText(holder.itemView.getContext().getResources().getString(R.string.date).concat(eventFormattedDate));
 
             } else if (event.getStart().getDate() != null && event.getStart().getDate().getValue() != 0) {
-                Log.d(TAG, "onBindViewHolder: 2" + event.getSummary());
-
                 eventFormattedDate = Constants.getInstance().getFormattedDate(event.getStart().getDate().getValue());
                 eventTimeTv.setText("no time for this event");
                 eventDetialTv.setText(holder.itemView.getContext().getResources().getString(R.string.Details).concat(event.getSummary()));
@@ -115,7 +109,7 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
             MainEntity mainEntity = googleEventsAndForecastModel.getForecastModels().get(eventDateTime).getMain();
 
             humidityTv.setText("Humidity : ".concat(String.valueOf(mainEntity.getHumidity())));
-            weatherTv.setText(String.valueOf(mainEntity.getTemp()));
+            tempTv.setText("Temperature : ".concat(String.valueOf(mainEntity.getTemp())));
             weatherStautsTv.setText(googleEventsAndForecastModel.getForecastModels().get(eventDateTime).getWeather().get(0).getDescription());
             Glide.with(holder.itemView.getContext())
                     .setDefaultRequestOptions(requestOptions)
@@ -123,9 +117,8 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
                     .into(weatherImageView);
 
         } else {
-
             humidityTv.setVisibility(View.GONE);
-            weatherTv.setVisibility(View.GONE);
+            tempTv.setVisibility(View.GONE);
             weatherImageView.setVisibility(View.GONE);
             weatherStautsTv.setText("sorry we can't find weather for this event");
         }
@@ -141,7 +134,6 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
     public void setUpdatedEvents(List<Event> events) {
         googleEventsAndForecastModel.getEventsModels().clear();
         googleEventsAndForecastModel.setEventsModels(events);
-        //eventsId.clear();
         notifyDataSetChanged();
     }
 
@@ -160,11 +152,9 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
     }
 
     public class EventItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-
         private Button acceptBtn, rejectBtn;
 
-        public EventItemViewHolder(@NonNull View itemView) {
+        private EventItemViewHolder(@NonNull View itemView) {
             super(itemView);
 
             acceptBtn = itemView.findViewById(R.id.accept_btn);

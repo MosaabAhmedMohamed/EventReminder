@@ -51,6 +51,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -78,6 +81,8 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
     private GoogleEventsListAdapter googleEventsListAdapter;
     private Calendar googleCalendar;
 
+    private ScheduledExecutorService scheduledExecutorService;
+
     private static final String[] SCOPES = {CalendarScopes.CALENDAR};
 
     public static GoogleEventsList newInstance() {
@@ -91,6 +96,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         if (view == null) {
             view = inflater.inflate(R.layout.events_list, container, false);
             ButterKnife.bind(this, view);
+            initRefreshLayout();
             if (!Constants.getInstance().isDeviceOnline(getActivity()))
                 checkInternetSnackbar();
             else
@@ -107,7 +113,6 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         googleEventsAndForecastModel = new GoogleEventsAndForecastModel();
         acc = new Gson().fromJson(sharedPreferences.getString(Constants.GOOGLE_USER, " "), GoogleSignInAccount.class);
         subScribeToObserver();
-        initRefreshLayout();
     }
 
     private void initRefreshLayout() {
@@ -210,7 +215,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         if (googleEventsListAdapter == null) {
             if (events == null || events.size() == 0) {
                 listViewStatusTv.setVisibility(View.VISIBLE);
-                listViewStatusTv.setText("you don't have any events yet");
+                listViewStatusTv.setText("You don't have any events yet");
             } else {
                 listViewStatusTv.setVisibility(View.GONE);
                 eventsRecycler.setVisibility(View.VISIBLE);
@@ -218,6 +223,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                 googleEventsListAdapter = new GoogleEventsListAdapter(this, googleEventsAndForecastModel);
                 eventsRecycler.setAdapter(googleEventsListAdapter);
             }
+            runEvery30Second();
 
         } else
             googleEventsListAdapter.setUpdatedEvents(events);
@@ -237,12 +243,13 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
     public void onDeleteEvent(String id) {
         if (!Constants.getInstance().isDeviceOnline(getActivity()))
             checkInternetSnackbar();
-        else if (deleteGoogleEventTask != null)
-            deleteGoogleEventTask.cancel(true);
+        else {
+            if (deleteGoogleEventTask != null)
+                deleteGoogleEventTask.cancel(true);
 
-        deleteGoogleEventTask = new DeleteGoogleEventTask(this, googleCalendar, id);
-        deleteGoogleEventTask.execute();
-
+            deleteGoogleEventTask = new DeleteGoogleEventTask(this, googleCalendar, id);
+            deleteGoogleEventTask.execute();
+        }
     }
 
     @Override
@@ -251,7 +258,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
             checkInternetSnackbar();
         else {
             if (googleEventsAndForecastModel.getEventsModels().get(position).getCreator().getEmail().equals(acc.getEmail())) {
-                Toast.makeText(getActivity(), "you can't accept event that you already created", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "You can't accept event that you already created", Toast.LENGTH_SHORT).show();
             } else if (googleEventsAndForecastModel.getEventsModels().get(position).getCreator() == null)
                 Toast.makeText(getActivity(), "An error occurred", Toast.LENGTH_SHORT).show();
             else {
@@ -260,8 +267,9 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
 
                     if (attendees.get(i).getEmail().equals(acc.getEmail())) {
                         if (attendees.get(i).getResponseStatus().equals("accepted")) {
-                            Toast.makeText(getActivity(), "you already accepted the invention", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "You already accepted the invention", Toast.LENGTH_SHORT).show();
                         } else {
+                            showProgressBar(true);
                             attendees.get(i).setResponseStatus("accepted");
                             googleEventsAndForecastModel.getEventsModels().get(position).setAttendees(attendees);
                             if (acceptGoogleEventsTask != null)
@@ -280,9 +288,56 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
 
     @Override
     public void onRefresh() {
-        if (googleEventsAndForecastModel.getEventsModels() != null)
-            googleEventsAndForecastModel.getEventsModels().clear();
-        swipeRefreshLayout.setRefreshing(true);
-        getUserData(acc);
+        if (!Constants.getInstance().isDeviceOnline(getActivity())) {
+            checkInternetSnackbar();
+            swipeRefreshLayout.setRefreshing(false);
+        } else {
+            if (googleEventsAndForecastModel == null) {
+                init();
+            } else {
+                if (googleEventsAndForecastModel.getEventsModels() != null)
+                    googleEventsAndForecastModel.getEventsModels().clear();
+                swipeRefreshLayout.setRefreshing(true);
+                reInitGoogleEventsTask();
+            }
+
+        }
     }
+
+    private void reInitGoogleEventsTask() {
+        if (makeGoogleEventsRequestTask != null)
+            makeGoogleEventsRequestTask.cancel(true);
+
+        makeGoogleEventsRequestTask = new MakeGoogleEventsRequestTask(this, googleCalendar);
+        makeGoogleEventsRequestTask.execute();
+    }
+
+
+    private void runEvery30Second() {
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.scheduleAtFixedRate
+                (new Runnable() {
+                    public void run() {
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (Constants.getInstance().isDeviceOnline(getActivity()))
+                                        reInitGoogleEventsTask();
+                                }
+                            });
+                        }
+                    }
+                }, 0, 30, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        acceptGoogleEventsTask = null;
+        deleteGoogleEventTask = null;
+        makeGoogleEventsRequestTask = null;
+        scheduledExecutorService = null;
+    }
+
 }

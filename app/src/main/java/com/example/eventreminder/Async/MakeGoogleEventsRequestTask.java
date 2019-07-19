@@ -21,8 +21,6 @@ public class MakeGoogleEventsRequestTask extends AsyncTask<Void, Void, List<Even
     public MakeGoogleEventsRequestTask(GoogleEventsList googleEventsList, Calendar calendar) {
         this.googleEventsList = googleEventsList;
         googleCalendar = calendar;
-
-
     }
 
     @Override
