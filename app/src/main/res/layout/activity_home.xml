@@ -26,19 +26,22 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/title"
+                android:id="@+id/title_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
+                android:layout_centerInParent="true"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="-16dp"
-                android:maxLines="1"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:text="@string/home"
-                android:textColor="#fff"
-                android:textSize="16sp" />
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/google"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:drawableStart="@drawable/google_logo_ic"
+                android:drawablePadding="8dp"
+                android:gravity="center"
+                android:padding="2dp"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <ImageView
                 android:id="@+id/menu"
@@ -50,26 +53,7 @@
 
         </RelativeLayout>
 
-        <TextView
-            android:id="@+id/google_nav_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="@string/google"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:drawableStart="@drawable/google_logo_ic"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical"
-            android:padding="2dp"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/relativeLayout4" />
+
 
         <FrameLayout
             android:id="@+id/fragments"
@@ -81,7 +65,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/google_nav_tv" />
+            app:layout_constraintTop_toBottomOf="@+id/relativeLayout4" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

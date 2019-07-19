@@ -1,6 +1,6 @@
 package com.example.eventreminder.Views.Adapters;
 
-import android.util.Log;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +20,7 @@ import com.example.eventreminder.R;
 import com.example.eventreminder.Util.Constants;
 import com.example.eventreminder.Util.OnEventActionLIstner;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventAttendee;
 
 import java.util.List;
 
@@ -48,19 +49,22 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
     View view2;
     @BindView(R.id.weather_stauts_tv)
     TextView weatherStautsTv;
+    @BindView(R.id.event_status_color)
+    View eventStatusColor;
 
     private OnEventActionLIstner onEventActionLIstner;
     private GoogleEventsAndForecastModel googleEventsAndForecastModel;
 
-    private String eventFormattedDate, startEventFormattedTime, endEventFormattedTime;
+    private String eventFormattedDate, startEventFormattedTime, endEventFormattedTime, loggedInUserEmail;
     private long eventDateTime;
 
     private RequestOptions requestOptions = new RequestOptions()
             .placeholder(R.drawable.ic_launcher_background);
 
-    public GoogleEventsListAdapter(OnEventActionLIstner onEventActionLIstner, GoogleEventsAndForecastModel googleEventsAndForecastModel) {
+    public GoogleEventsListAdapter(OnEventActionLIstner onEventActionLIstner, GoogleEventsAndForecastModel googleEventsAndForecastModel, String loggedUser) {
         this.onEventActionLIstner = onEventActionLIstner;
         this.googleEventsAndForecastModel = googleEventsAndForecastModel;
+        loggedInUserEmail = loggedUser;
     }
 
     @NonNull
@@ -81,6 +85,9 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
             endEventFormattedTime = null;
             eventDateTime = 0;
 
+            if (!event.getCreator().getEmail().equals(loggedInUserEmail) && event.getAttendees() != null)
+               checkEventInvitationStatus(holder.itemView.getContext(),event.getAttendees());
+
             if (event.getStart().getDateTime() == null && event.getStart().getDate() == null) {
                 setVisibility(false, holder.itemView);
                 return;
@@ -100,6 +107,17 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
                 eventDetialTv.setText(holder.itemView.getContext().getResources().getString(R.string.Details).concat(event.getSummary()));
                 eventDateTv.setText(holder.itemView.getContext().getResources().getString(R.string.date).concat(eventFormattedDate));
                 setWeatherData(holder, 0);
+            }
+        }
+    }
+
+    private void checkEventInvitationStatus(Context context, List<EventAttendee> attendees) {
+        for (int i =0;i<attendees.size();i++)
+        {
+            if (attendees.get(i).getEmail().equals(loggedInUserEmail) && !attendees.get(i).getResponseStatus().equals("accepted"))
+            {
+                eventStatusColor.setBackground(context.getDrawable(R.drawable.yeallow_circle_background_shape));
+                break;
             }
         }
     }

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.core.view.GravityCompat;
@@ -32,16 +33,15 @@ import static com.example.eventreminder.Util.Constants.CALENDAR_SCOPE;
 
 public class Home extends BaseActivity {
 
-    @BindView(R.id.title)
-    TextView title;
+
     @BindView(R.id.menu)
     ImageView menu;
     @BindView(R.id.out_from_google_btn)
     Button outFromGooglBtn;
     @BindView(R.id.drawer_layout)
     DrawerLayout drawerLayout;
-    @BindView(R.id.google_nav_tv)
-    TextView googleNavTv;
+    @BindView(R.id.title_tv)
+    TextView titleTv;
 
     private LinkedList<BaseFragment> fragments = new LinkedList<>();
     private BaseFragment CurrentFragment;
@@ -146,6 +146,9 @@ public class Home extends BaseActivity {
                 .commitAllowingStateLoss();
     }
 
+    public void setTitleTv(String title) {
+        titleTv.setText(title);
+    }
 
     @Override
     public void onBackPressed() {

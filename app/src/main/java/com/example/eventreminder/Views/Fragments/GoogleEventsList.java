@@ -220,7 +220,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                 listViewStatusTv.setVisibility(View.GONE);
                 eventsRecycler.setVisibility(View.VISIBLE);
                 googleEventsAndForecastModel.setEventsModels(events);
-                googleEventsListAdapter = new GoogleEventsListAdapter(this, googleEventsAndForecastModel);
+                googleEventsListAdapter = new GoogleEventsListAdapter(this, googleEventsAndForecastModel, acc.getEmail());
                 eventsRecycler.setAdapter(googleEventsListAdapter);
             }
             runEvery30Second();
