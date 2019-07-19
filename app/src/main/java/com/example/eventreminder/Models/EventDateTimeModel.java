@@ -6,7 +6,6 @@ import android.os.Parcelable;
 import com.google.api.services.calendar.model.Event;
 
 public class EventDateTimeModel implements Parcelable {
-
     private String Day;
     private int startTime, endTime;
     private Event event;
@@ -18,6 +17,7 @@ public class EventDateTimeModel implements Parcelable {
         this.endTime = endTime;
         this.event = event;
         discard = false;
+
     }
 
     protected EventDateTimeModel(Parcel in) {

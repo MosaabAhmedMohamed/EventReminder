@@ -4,5 +4,5 @@ import com.example.eventreminder.Models.EventDateTimeModel;
 
 public interface OnHandelOverlappingListner {
 
-    void onHandel(boolean status, EventDateTimeModel selectedEventToReschedule, int position);
+    void onHandel(boolean status, EventDateTimeModel selectedEventToReschedule, int positionOfEventInList,int eventSelectedFromDialog);
 }

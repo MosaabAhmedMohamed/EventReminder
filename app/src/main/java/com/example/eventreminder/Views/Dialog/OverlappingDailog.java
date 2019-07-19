@@ -2,7 +2,6 @@ package com.example.eventreminder.Views.Dialog;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class OverlappingDailog extends DialogFragment {
-    private static final String TAG = "OverlappingDailog";
     @BindView(R.id.event_1_btn)
     Button event1Btn;
     @BindView(R.id.event_2_btn)
@@ -84,15 +82,15 @@ public class OverlappingDailog extends DialogFragment {
         switch (view.getId()) {
             case R.id.event_1_btn:
                  getDialog().dismiss();
-                onHandelOverlappingListner.onHandel(true, eventDateTimeModels.get(0), eventPosInList);
+                onHandelOverlappingListner.onHandel(true, eventDateTimeModels.get(0), eventPosInList,Constants.SELECTED_EVENTFROM_LIST);
                 break;
             case R.id.event_2_btn:
                 getDialog().dismiss();
-                onHandelOverlappingListner.onHandel(true, eventDateTimeModels.get(1), 0);
+                onHandelOverlappingListner.onHandel(true, eventDateTimeModels.get(1), 0,Constants.SELECTED_SECOUND_EVENT);
                 break;
             case R.id.discard_btn:
                 getDialog().dismiss();
-                onHandelOverlappingListner.onHandel(false, eventDateTimeModels.get(0), eventPosInList);
+                onHandelOverlappingListner.onHandel(false, eventDateTimeModels.get(0), eventPosInList,0);
                 break;
         }
     }

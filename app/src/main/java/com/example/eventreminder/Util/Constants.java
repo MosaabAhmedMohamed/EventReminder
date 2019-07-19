@@ -33,14 +33,17 @@ public class Constants {
     public static final int RC_SIGN_IN = 9001;
     public static final int RC_RECOVERABLE = 9002;
 
-
+    public static final int SELECTED_EVENTFROM_LIST = 1;
+    public static final int SELECTED_SECOUND_EVENT = 2;
 
     public static final String CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar";
     public static final String EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events";
     public static final String GOOGLE_USER = "GOOGLE_SUER";
     public static final String FACEBOOK_SUER = "FACEBOOK_USER";
     public static final String EVENT_ONE = "EVENT_ONE";
-    public static final String EVENT_TWO = "EVENT_ONE";
+    public static final String EVENT_SELECTED_TO_EDIT = "EVENT_SELECTED_TO_EDIT";
+    public static final String EVENTS_MODEL = "EVENTS_MODEL";
+
 
     public boolean isValidEmail(CharSequence target) {
         return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());

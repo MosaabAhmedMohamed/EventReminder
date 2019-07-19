@@ -96,6 +96,8 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
+        if (getActivity() != null && isAdded())
+            ((Home) getActivity()).setTitleTv("Google calendar events");
         if (view == null) {
             view = inflater.inflate(R.layout.events_list, container, false);
             ButterKnife.bind(this, view);
@@ -207,7 +209,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                     int eventStart = Constants.getInstance().convertUnixToSeconds(event.getStart().getDateTime().getValue());
                     int eventEnd = Constants.getInstance().convertUnixToSeconds(event.getEnd().getDateTime().getValue());
 
-                    googleEventsAndForecastModel.getEventDateTimeModels().add(new EventDateTimeModel(date,eventStart,eventEnd,event));
+                    googleEventsAndForecastModel.getEventDateTimeModels().add(new EventDateTimeModel(date, eventStart, eventEnd, event));
                 }
                 //Log.d(TAG, "getDataFromApi:   2 " + event.toPrettyString());
                 //  Log.d(TAG, "getDataFromApi: " + String.format("%s (%s)", event.getSummary(), start));
@@ -296,7 +298,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         ArrayList<EventDateTimeModel> eventDateTimeModels = new ArrayList<>();
         eventDateTimeModels.add(firstEvent);
         eventDateTimeModels.add(secondEvent);
-        OverlappingDailog overlappingDailog = OverlappingDailog.newInstance(eventDateTimeModels,position);
+        OverlappingDailog overlappingDailog = OverlappingDailog.newInstance(eventDateTimeModels, position);
         overlappingDailog.setTargetFragment(GoogleEventsList.this, 1);
         if (getFragmentManager() != null)
             overlappingDailog.show(getFragmentManager(), "selectDialog");
@@ -358,8 +360,17 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
     }
 
     @Override
-    public void onHandel(boolean status, EventDateTimeModel selectedEventToReschedule ,int position ) {
+    public void onHandel(boolean status, EventDateTimeModel selectedEventToReschedule, int positionOfEventInList, int eventSelectedFromDialog) {
+        if (status && eventSelectedFromDialog == Constants.SELECTED_EVENTFROM_LIST) {
+            if (getActivity() != null && isAdded())
+                ((Home) getActivity()).PushFragment(ReschudleOverlappedEvent.newInstance(googleEventsAndForecastModel.getEventDateTimeModels(), selectedEventToReschedule));
 
-        Log.d(TAG, "onHandel: ");
+            Log.d(TAG, "onHandel: " + positionOfEventInList);
+            Log.d(TAG, "onHandel: " + selectedEventToReschedule.getEvent().getSummary());
+        } else if (status && eventSelectedFromDialog == Constants.SELECTED_SECOUND_EVENT) {
+            Log.d(TAG, "onHandel: " + positionOfEventInList);
+            Log.d(TAG, "onHandel: " + selectedEventToReschedule.getEvent().getSummary());
+        }
+
     }
 }

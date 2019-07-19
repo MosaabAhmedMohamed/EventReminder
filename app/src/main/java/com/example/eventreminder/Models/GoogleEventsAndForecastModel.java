@@ -14,10 +14,8 @@ public class GoogleEventsAndForecastModel {
     private ArrayList<EventDateTimeModel> eventDateTimeModels;
 
     public GoogleEventsAndForecastModel() {
-        eventDateTimeModels = new ArrayList();
+        eventDateTimeModels = new ArrayList<>();
     }
-
-
 
     public HashMap<Integer, ListEntity> getForecastModels() {
         return forecastModelsMap;

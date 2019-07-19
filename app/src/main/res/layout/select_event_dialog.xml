@@ -15,11 +15,22 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:text="@string/select_event"
+        android:text="@string/two_event_overlapped"
         android:textColor="@color/black"
         android:textDirection="locale"
         android:textSize="18sp"
         android:textStyle="bold" />
+    <TextView
+        android:id="@+id/desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/select_event"
+        android:textColor="@color/black"
+        android:textDirection="locale"
+        android:textSize="14sp" />
 
     <Button
         android:id="@+id/event_1_btn"
