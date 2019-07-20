@@ -32,12 +32,24 @@
         android:textDirection="locale"
         android:textSize="14sp" />
 
+    <TextView
+        android:id="@+id/note_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/note"
+        android:textColor="@color/black"
+        android:textDirection="locale"
+        android:textSize="12sp" />
+
     <Button
         android:id="@+id/event_1_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:background="@drawable/gredint_square_shape"
         android:textAlignment="center"

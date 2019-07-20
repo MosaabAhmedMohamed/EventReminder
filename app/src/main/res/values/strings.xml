@@ -15,13 +15,15 @@
 
     <string name="facebook_app_id">880149515686126</string>
     <string name="fb_login_protocol_scheme">fb880149515686126</string>
-    <string name="select_event">Select event to reschedule</string>
+    <string name="select_event">Select event to reschedule </string>
+    <string name="note">Note : the selected event to reschedule will be deleted from the events to be updated from it\'s creator</string>
     <string name="discard">Discard</string>
     <string name="two_event_overlapped">Two Event overlapped</string>
-    <string name="this_time_is_free">This time is available to reschedule : </string>
-    <string name="or_you_can_select_your">OR you can select you\'r preferred time</string>
+    <string name="to_be_reschduled">Event time to be rescheduled : </string>
+    <string name="you_can_select_your">you can select you\'r preferred time</string>
     <string name="Date">Date</string>
     <string name="Time">Time</string>
     <string name="Do_You_want_to_send_email_to">Do you want to send email to :</string>
     <string name="confirm">Confirm</string>
+    <string name="event_creator">Event creator</string>
 </resources>

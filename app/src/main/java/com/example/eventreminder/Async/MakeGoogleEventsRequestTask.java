@@ -70,6 +70,7 @@ public class MakeGoogleEventsRequestTask extends AsyncTask<Void, Void, List<Even
                 googleEventsList.onRecoverableAuthException((UserRecoverableAuthIOException) mLastError);
             } else {
                 Log.d(TAG, "onCancelled: " + mLastError.getMessage());
+                googleEventsList.onErrorResponse(mLastError.getMessage());
             }
         } else {
             Log.d(TAG, "onCancelled: " + "canceled");
@@ -82,7 +83,7 @@ public class MakeGoogleEventsRequestTask extends AsyncTask<Void, Void, List<Even
         DateTime now = new DateTime(System.currentTimeMillis());
         Events events = googleCalendar.events()
                 .list("primary")
-                .setMaxResults(20)
+                .setMaxResults(30)
                 .setTimeMin(now)
                 .setOrderBy("startTime").setSingleEvents(true).execute();
 

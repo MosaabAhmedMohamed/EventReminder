@@ -58,7 +58,7 @@ public class Home extends BaseActivity {
 
 
     private void init() {
-        GoogleSignInAccount acc = new Gson().fromJson(sharedPreferences.getString(Constants.GOOGLE_USER, " "), GoogleSignInAccount.class);
+        GoogleSignInAccount acc = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
         if (acc != null && acc.getAccount() != null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestScopes(new Scope(CALENDAR_SCOPE))
@@ -154,15 +154,9 @@ public class Home extends BaseActivity {
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START))
             drawerLayout.closeDrawer(GravityCompat.START);
-
         if (fragments.isEmpty()) {
             if (CurrentFragment instanceof GoogleEventsList) {
-                if (!sharedPreferences.getBoolean("login", false)) {
-                    startActivity(new Intent(this, Login.class));
-                    finish();
-                } else {
-                    super.onBackPressed();
-                }
+                super.onBackPressed();
             } else {
                 ReplaceFragment(googleEventsList);
             }

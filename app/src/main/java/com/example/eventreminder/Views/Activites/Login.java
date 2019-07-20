@@ -133,13 +133,10 @@ public class Login extends BaseActivity {
 
     private void goToHomeAndSaveUser(GoogleSignInAccount account) {
         if (account != null) {
-            editor.putBoolean("login", true);
-            editor.putString(Constants.GOOGLE_USER, new Gson().toJson(account));
-            editor.commit();
             startActivity(new Intent(this, Home.class));
             finish();
         } else {
-            Toast.makeText(this, "error occurred", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "error occurred please try again", Toast.LENGTH_SHORT).show();
         }
     }
 

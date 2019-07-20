@@ -1,7 +1,6 @@
 package com.example.eventreminder.Views.Adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +52,8 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
     TextView weatherStautsTv;
     @BindView(R.id.event_status_color)
     View eventStatusColor;
+    @BindView(R.id.event_creator_tv)
+    TextView eventCreatorTv;
 
     private OnEventActionLIstner onEventActionLIstner;
     private GoogleEventsAndForecastModel googleEventsAndForecastModel;
@@ -116,12 +117,17 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
                 eventTimeTv.setText("no time for this event");
                 eventDetialTv.setText(holder.itemView.getContext().getResources().getString(R.string.Details).concat(event.getSummary()));
                 eventDateTv.setText(holder.itemView.getContext().getResources().getString(R.string.date).concat(eventFormattedDate));
-                setWeatherData(holder, 0);
+                setWeatherData(holder, Constants.getInstance().getClosestTimeUnix(googleEventsAndForecastModel.getForecastModels().keySet(), eventDateTime));
             }
+            if (event.getCreator() != null && event.getCreator().getEmail() != null)
+                eventCreatorTv.setText("Event creator : ".concat(event.getCreator().getEmail()));
+            else
+                eventCreatorTv.setVisibility(View.GONE);
         }
     }
 
     private void cheekForEventOverlapping(String eventFormattedDate, Event event, int position) {
+
         for (EventDateTimeModel eventDateTimeModel : googleEventsAndForecastModel.getEventDateTimeModels()) {
             if (eventDateTimeModel.getDay().equals(eventFormattedDate) &&
                     !eventDateTimeModel.getEvent().getId().equals(event.getId()) &&
@@ -134,6 +140,7 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
                         onEventActionLIstner.onEventOverlapped(new EventDateTimeModel(eventFormattedDate,
                                 startTimeEventInList, endTimeEventInList, event), eventDateTimeModel, position);
                         isDealingWithOverLap = true;
+                        eventDateTimeModel.setDiscard(true);
                         break;
                     }
                 }
@@ -196,6 +203,10 @@ public class GoogleEventsListAdapter extends RecyclerView.Adapter<GoogleEventsLi
             param.width = 0;
         }
         itemView.setLayoutParams(param);
+    }
+
+    public void notifyEventDealingWithOvenLapping() {
+        isDealingWithOverLap = false;
     }
 
     public class EventItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

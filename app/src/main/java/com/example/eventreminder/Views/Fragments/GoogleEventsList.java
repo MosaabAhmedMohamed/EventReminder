@@ -47,7 +47,6 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -85,7 +84,6 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
     private Calendar googleCalendar;
 
     private ScheduledExecutorService scheduledExecutorService;
-
     private static final String[] SCOPES = {CalendarScopes.CALENDAR};
 
     public static GoogleEventsList newInstance() {
@@ -116,7 +114,9 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         eventsRecycler.setHasFixedSize(true);
         eventsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
         googleEventsAndForecastModel = new GoogleEventsAndForecastModel();
-        acc = new Gson().fromJson(sharedPreferences.getString(Constants.GOOGLE_USER, " "), GoogleSignInAccount.class);
+        if (getActivity() != null && isAdded())
+            acc = GoogleSignIn.getLastSignedInAccount(getActivity().getApplicationContext());
+        //acc = new Gson().fromJson(sharedPreferences.getString(Constants.GOOGLE_USER, " "), GoogleSignInAccount.class);
         subScribeToObserver();
     }
 
@@ -157,11 +157,9 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
             GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(getActivity(),
                     Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
             credential.setSelectedAccountName(acc.getAccount().name);
+            credential.setSelectedAccount(acc.getAccount());
             initCalendarAndGetEventsFromApi(credential);
         } else if (getActivity() != null) {
-            editor.remove(Constants.GOOGLE_USER);
-            editor.putBoolean("login", false);
-            editor.commit();
             startActivity(new Intent(getActivity(), Login.class));
             getActivity().finish();
         }
@@ -211,7 +209,6 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
 
                     googleEventsAndForecastModel.getEventDateTimeModels().add(new EventDateTimeModel(date, eventStart, eventEnd, event));
                 }
-                //Log.d(TAG, "getDataFromApi:   2 " + event.toPrettyString());
                 //  Log.d(TAG, "getDataFromApi: " + String.format("%s (%s)", event.getSummary(), start));
             }
         }
@@ -232,8 +229,9 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
             }
             runEvery30Second();
 
-        } else
+        } else {
             googleEventsListAdapter.setUpdatedEvents(events);
+        }
     }
 
     public void showProgressBar(boolean visibility) {
@@ -298,7 +296,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         ArrayList<EventDateTimeModel> eventDateTimeModels = new ArrayList<>();
         eventDateTimeModels.add(firstEvent);
         eventDateTimeModels.add(secondEvent);
-        OverlappingDailog overlappingDailog = OverlappingDailog.newInstance(eventDateTimeModels, position);
+        OverlappingDailog overlappingDailog = OverlappingDailog.newInstance(eventDateTimeModels, position, acc.getEmail());
         overlappingDailog.setTargetFragment(GoogleEventsList.this, 1);
         if (getFragmentManager() != null)
             overlappingDailog.show(getFragmentManager(), "selectDialog");
@@ -343,11 +341,12 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                                 public void run() {
                                     if (Constants.getInstance().isDeviceOnline(getActivity()))
                                         reInitGoogleEventsTask();
+                                    Log.d(TAG, "run: ");
                                 }
                             });
                         }
                     }
-                }, 0, 30, TimeUnit.SECONDS);
+                }, 30, 30, TimeUnit.SECONDS);
     }
 
     @Override
@@ -361,16 +360,22 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
 
     @Override
     public void onHandel(boolean status, EventDateTimeModel selectedEventToReschedule, int positionOfEventInList, int eventSelectedFromDialog) {
-        if (status && eventSelectedFromDialog == Constants.SELECTED_EVENTFROM_LIST) {
+        if (status && eventSelectedFromDialog == Constants.SELECTED_EVENT_TO_RESCHDULE) {
+            onDeleteEvent(selectedEventToReschedule.getEvent().getId());
+            googleEventsListAdapter.notifyEventDealingWithOvenLapping();
             if (getActivity() != null && isAdded())
-                ((Home) getActivity()).PushFragment(ReschudleOverlappedEvent.newInstance(googleEventsAndForecastModel.getEventDateTimeModels(), selectedEventToReschedule));
+                ((Home) getActivity()).PushFragment(RescheduleOverlappedEvent.
+                        newInstance(googleEventsAndForecastModel.getEventDateTimeModels(), selectedEventToReschedule));
+        } else if (!status && eventSelectedFromDialog == 0) {
 
-            Log.d(TAG, "onHandel: " + positionOfEventInList);
-            Log.d(TAG, "onHandel: " + selectedEventToReschedule.getEvent().getSummary());
-        } else if (status && eventSelectedFromDialog == Constants.SELECTED_SECOUND_EVENT) {
-            Log.d(TAG, "onHandel: " + positionOfEventInList);
-            Log.d(TAG, "onHandel: " + selectedEventToReschedule.getEvent().getSummary());
+        } else if (!status) {
+            onDeleteEvent(selectedEventToReschedule.getEvent().getId());
+            googleEventsListAdapter.notifyEventDealingWithOvenLapping();
         }
 
+    }
+
+    public void onErrorResponse(String message) {
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 }
