@@ -64,7 +64,7 @@ import static android.app.Activity.RESULT_OK;
 import static com.example.eventreminder.Util.Constants.RC_RECOVERABLE;
 
 public class GoogleEventsList extends BaseFragment implements OnEventActionLIstner, SwipeRefreshLayout.OnRefreshListener, OnHandelOverlappingListner {
-    private static final String TAG = "GoogleEventsList";
+   // private static final String TAG = "GoogleEventsList";
     @BindView(R.id.events_recycler)
     RecyclerView eventsRecycler;
     @BindView(R.id.list_view_status_tv)
@@ -341,7 +341,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                                 public void run() {
                                     if (Constants.getInstance().isDeviceOnline(getActivity()))
                                         reInitGoogleEventsTask();
-                                    Log.d(TAG, "run: ");
+                                    //Log.d(TAG, "run: ");
                                 }
                             });
                         }
@@ -367,7 +367,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                 ((Home) getActivity()).PushFragment(RescheduleOverlappedEvent.
                         newInstance(googleEventsAndForecastModel.getEventDateTimeModels(), selectedEventToReschedule));
         } else if (!status && eventSelectedFromDialog == 0) {
-
+            googleEventsListAdapter.notifyEventDealingWithOvenLapping();
         } else if (!status) {
             onDeleteEvent(selectedEventToReschedule.getEvent().getId());
             googleEventsListAdapter.notifyEventDealingWithOvenLapping();

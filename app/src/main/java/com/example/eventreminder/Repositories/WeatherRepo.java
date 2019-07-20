@@ -22,7 +22,7 @@ public class WeatherRepo {
 
     public MutableLiveData<WeatherResponse> weatherResponseMutableLiveData(String cityName, String ApiKey, String numberOfDays) {
         weatherResponseMutableLiveData = new MutableLiveData<>();
-        ServiceGenerator.getWetherApi().getWeatherByCityName(cityName, ApiKey, numberOfDays).enqueue(new Callback<WeatherResponse>() {
+        ServiceGenerator.getWetherApi().getWeatherByCityName(cityName, ApiKey, numberOfDays,"metric").enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 if (response.isSuccessful()) {
@@ -31,7 +31,6 @@ public class WeatherRepo {
                     weatherResponseMutableLiveData.setValue(null);
                 }
             }
-
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
                 weatherResponseMutableLiveData.setValue(null);
