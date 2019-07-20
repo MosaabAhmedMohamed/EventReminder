@@ -31,7 +31,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class RescheduleOverlappedEvent extends BaseFragment {
-    private static final String TAG = "ReschudleOverlappedEven";
+    //private static final String TAG = "ReschudleOverlappedEven";
 
     @BindView(R.id.desc_tv)
     TextView descTv;
@@ -54,7 +54,7 @@ public class RescheduleOverlappedEvent extends BaseFragment {
     private Context context;
     private int mYear, mMonth, mDay;
     private int mHour, mMinute;
-    private String date, time, recipient;
+    private String date, time, recipient,startEventFormattedTime;
 
     public static RescheduleOverlappedEvent newInstance(ArrayList<EventDateTimeModel> eventDateTimeModels, EventDateTimeModel selectedEventDateTimeModel) {
         RescheduleOverlappedEvent rescheduleOverlappedEvent = new RescheduleOverlappedEvent();
@@ -85,20 +85,20 @@ public class RescheduleOverlappedEvent extends BaseFragment {
         if (getActivity() != null && isAdded())
             context = getActivity();
         ((Home) context).setTitleTv("Reschedule overlapped events");
+        ((Home) context).showProgressBar(false);
         if (getArguments() != null) {
             eventDateTimeModels = getArguments().getParcelableArrayList(Constants.EVENTS_MODEL);
-            selectedEventDateTimeModel = getArguments().getParcelable(Constants.EVENT_SELECTED_TO_EDIT);
-        }
+            selectedEventDateTimeModel = getArguments().getParcelable(Constants.EVENT_SELECTED_TO_EDIT); }
+
+        startEventFormattedTime = Constants.getInstance().getFormattedTime(selectedEventDateTimeModel.getEvent().getStart().getDateTime().getValue());
 
         descTv.setText(getResources().getString(R.string.to_be_reschduled)
-                .concat(selectedEventDateTimeModel.getDay()
-                        .concat(" " + ConvertFromSecondsToTime(selectedEventDateTimeModel.getStartTime()))));
+                .concat(selectedEventDateTimeModel.getDay().concat(" " +startEventFormattedTime)));
         recipient = selectedEventDateTimeModel.getEvent().getCreator().getEmail();
+
         date = selectedEventDateTimeModel.getDay();
         dateTv.setText(date);
         confirmTv.setText(getResources().getString(R.string.Do_You_want_to_send_email_to).concat(" " + recipient));
-
-        int startEndTimeDiff = selectedEventDateTimeModel.getEndTime() - selectedEventDateTimeModel.getStartTime();
     }
 
     private void checkInternetSnackbar() {
@@ -166,12 +166,12 @@ public class RescheduleOverlappedEvent extends BaseFragment {
                         mHour = hourOfDay;
                         mMinute = minute;
                         time = hourOfDay + " : " + minute;
+
                         if (!cheekForFreeTime(convertTimeToSeconds(minute, hourOfDay))) {
                             Toast.makeText(context, "this time is not available", Toast.LENGTH_SHORT).show();
                             timePicker();
                         } else {
-                            //time_tv.setText(getResources().getString(R.string.Time).concat(" : ").concat(time));
-                            Toast.makeText(context, "done", Toast.LENGTH_SHORT).show();
+                            time_tv.setText(getResources().getString(R.string.Time).concat(" : ").concat(time));
                         }
                     }
                 }, mHour, mMinute, false);
@@ -185,25 +185,29 @@ public class RescheduleOverlappedEvent extends BaseFragment {
 
     private boolean cheekForFreeTime(int eventStartTimeInSeconds) {
         for (EventDateTimeModel eventDateTimeModel : eventDateTimeModels) {
-            if (date.equals(eventDateTimeModel.getDay()) && eventStartTimeInSeconds >= eventDateTimeModel.getStartTime() ||
-                    eventStartTimeInSeconds <= eventDateTimeModel.getEndTime()) {
-                return false;
-            } else
-                return true;
+            if (date.equals(eventDateTimeModel.getDay())) {
+                if (eventStartTimeInSeconds < eventDateTimeModel.getStartTime() || eventStartTimeInSeconds > eventDateTimeModel.getEndTime()) {
+                    return true;
+                }
+            } else if (!date.equals(eventDateTimeModel.getDay())) {
+                if (eventStartTimeInSeconds < eventDateTimeModel.getStartTime() || eventStartTimeInSeconds > eventDateTimeModel.getEndTime()) {
+                    return true;
+                }
+            }
         }
-        return true;
+        return false;
     }
 
     private void sendMail() {
         String[] recipients = new String[2];
         recipients[0] = recipient;
         String subject = "Rescheduling event time ";
-        String message = "Rescheduling event ".concat(selectedEventDateTimeModel.getEvent().getSummary() + " ")
-                .concat(selectedEventDateTimeModel.getDay().concat(" ")
-                        .concat(ConvertFromSecondsToTime(selectedEventDateTimeModel.getStartTime()))
-                        .concat(" To : ").concat("date : " + date + " ").concat("Time : " + time));
+        String message = "Rescheduling event : ".concat(selectedEventDateTimeModel.getEvent().getSummary())
+                .concat("\n From Date "+selectedEventDateTimeModel.getDay().concat(" time ")
+                        .concat(startEventFormattedTime))
+                        .concat("\nTo : ").concat("date " + date).concat(" time " + time);
 
-        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        Intent intent = new Intent(Intent.ACTION_SEND);
         intent.putExtra(Intent.EXTRA_EMAIL, recipients);
         intent.putExtra(Intent.EXTRA_SUBJECT, subject);
         intent.putExtra(Intent.EXTRA_TEXT, message);
@@ -212,9 +216,4 @@ public class RescheduleOverlappedEvent extends BaseFragment {
         startActivity(Intent.createChooser(intent, "Choose an email client"));
     }
 
-    private String ConvertFromSecondsToTime(int totalSecs) {
-        int hours = totalSecs / 3600;
-        int minutes = (totalSecs % 3600) / 60;
-        return String.format("%02d:%02d:", hours, minutes);
-    }
 }
