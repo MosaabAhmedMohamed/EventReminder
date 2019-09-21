@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home"
+    app:startDestination="@id/eventList">
+
+    <fragment
+        android:id="@+id/eventList"
+        android:name="com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.GoogleEventsList"
+        android:label="Google Events List"
+        tools:layout="@layout/events_list"
+        >
+        <action
+            android:id="@+id/action_eventList_to_RescheduleOverlappedEvent"
+            app:destination="@id/RescheduleOverlappedEvent" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/RescheduleOverlappedEvent"
+        android:name="com.example.eventreminder.refactoring.ui.home.googleEvents.reschduleEvent.RescheduleOverlappedEvent"
+        android:label="Reschedule Event"
+        tools:layout="@layout/reschdule_event"
+        >
+        <action
+            android:id="@+id/action_RescheduleOverlappedEvent_to_eventList"
+            app:destination="@id/eventList"
+            app:popUpTo="@+id/eventList" />
+    </fragment>
+
+</navigation>
