@@ -1,6 +1,7 @@
-package com.example.eventreminder.old.Async;
+package com.example.eventreminder.refactoring.Async;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.GoogleEventsList;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -10,31 +11,24 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
-public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
-    //private static final String TAG = "DeleteGoogleEventTask";
+public class MakeGoogleEventsRequestTask extends AsyncTask<Void, Void, List<Event>> {
+    private static final String TAG = "MakeGoogleEventsRequest";
+
     private Calendar googleCalendar;
     private Exception mLastError = null;
-    private String eventId ;
 
-    private GoogleEventsList googleEventsList;
+    private WeakReference<GoogleEventsList> googleEventsListWeakReference;
 
-    public DeleteGoogleEventTask(GoogleEventsList googleEventsList, Calendar calendar, String eventId) {
-        this.googleEventsList = googleEventsList;
+    public MakeGoogleEventsRequestTask(GoogleEventsList googleEventsList, Calendar calendar) {
+        googleEventsListWeakReference = new WeakReference<>(googleEventsList);
         googleCalendar = calendar;
-        this.eventId = eventId;
     }
 
     @Override
     protected List<Event> doInBackground(Void... params) {
-        try {
-            googleCalendar.events().delete("primary", eventId).execute();
-           // Log.d(TAG, "doInBackground: ");
-        } catch (IOException e) {
-            e.printStackTrace();
-          //  Log.d(TAG, "doInBackground: "+e.getMessage());
-        }
         try {
 
             return getDataFromApi();
@@ -48,22 +42,24 @@ public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-       // googleEventsList.showProgressBar(true);
+        //  googleEventsList.showProgressBar(true);
     }
 
     @Override
     protected void onPostExecute(List<Event> events) {
         super.onPostExecute(events);
-       // googleEventsList.showProgressBar(false);
+        //   googleEventsList.showProgressBar(false);
         if (events == null || events.size() == 0) {
             try {
-                googleEventsList.getEvents(null);
+                if (getGoogleEventsListRefrence() != null)
+                    getGoogleEventsListRefrence().getEvents(null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                googleEventsList.getEvents(events);
+                if (getGoogleEventsListRefrence() != null)
+                    getGoogleEventsListRefrence().getEvents(events);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -74,15 +70,16 @@ public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
     @Override
     protected void onCancelled() {
         super.onCancelled();
-       // googleEventsList.showProgressBar(false);
-        if (mLastError != null) {
+        //  googleEventsList.showProgressBar(false);
+        if (mLastError != null && getGoogleEventsListRefrence() != null) {
             if (mLastError instanceof UserRecoverableAuthIOException) {
-                googleEventsList.onRecoverableAuthException((UserRecoverableAuthIOException) mLastError);
+                getGoogleEventsListRefrence().onRecoverableAuthException((UserRecoverableAuthIOException) mLastError);
             } else {
-              //  Log.d(TAG, "onCancelled: " + mLastError.getMessage());
+                Log.d(TAG, "onCancelled: " + mLastError.getMessage());
+                getGoogleEventsListRefrence().onErrorResponse(mLastError.getMessage());
             }
         } else {
-            //Log.d(TAG, "onCancelled: " + "canceled");
+            Log.d(TAG, "onCancelled: " + "canceled");
         }
     }
 
@@ -95,7 +92,15 @@ public class DeleteGoogleEventTask extends AsyncTask<Void, Void, List<Event>> {
                 .setMaxResults(30)
                 .setTimeMin(now)
                 .setOrderBy("startTime").setSingleEvents(true).execute();
-      //  Log.d(TAG, "getDataFromApi: " + events.getItems().toString());
+
         return events.getItems();
+    }
+
+    private GoogleEventsList getGoogleEventsListRefrence() {
+        GoogleEventsList googleEventsList = googleEventsListWeakReference.get();
+        if (googleEventsList == null || googleEventsList.getBaseActivity().isFinishing()) {
+            return null;
+        }
+        return googleEventsList;
     }
 }

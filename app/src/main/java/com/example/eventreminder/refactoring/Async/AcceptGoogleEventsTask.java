@@ -1,4 +1,4 @@
-package com.example.eventreminder.old.Async;
+package com.example.eventreminder.refactoring.Async;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -11,6 +11,7 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
@@ -18,27 +19,27 @@ public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
     private Calendar googleCalendar;
     private Exception mLastError = null;
     private Event calendarEvent;
-    private GoogleEventsList googleEventsList;
+    private WeakReference<GoogleEventsList> googleEventsListWeakReference;
 
 
     public AcceptGoogleEventsTask(GoogleEventsList googleEventsList, Calendar googleCalendar, Event event) {
-        this.googleEventsList = googleEventsList;
+        googleEventsListWeakReference = new WeakReference<>(googleEventsList);
         this.googleCalendar = googleCalendar;
         this.calendarEvent = event;
 
-        Log.d(TAG, "AcceptGoogleEventsTask: "+event.getAttendees().toString());
+        Log.d(TAG, "AcceptGoogleEventsTask: " + event.getAttendees().toString());
     }
 
     @Override
     protected List<Event> doInBackground(Void... params) {
 
         try {
-            googleCalendar.events().update("primary", calendarEvent.getId(),calendarEvent).execute();
+            googleCalendar.events().update("primary", calendarEvent.getId(), calendarEvent).execute();
             Log.d(TAG, "doInBackground: ");
         } catch (IOException e) {
             e.printStackTrace();
             Log.d(TAG, "doInBackground: ");
-            Log.d(TAG, "doInBackground: "+e.getMessage());
+            Log.d(TAG, "doInBackground: " + e.getMessage());
         }
 
 
@@ -55,22 +56,24 @@ public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-      //  googleEventsList.showProgressBar(true);
+        //  googleEventsList.showProgressBar(true);
     }
 
     @Override
     protected void onPostExecute(List<Event> events) {
         super.onPostExecute(events);
-      //  googleEventsList.showProgressBar(false);
+        //  googleEventsList.showProgressBar(false);
         if (events == null || events.size() == 0) {
             try {
-                googleEventsList.getEvents(null);
+                if (getGoogleEventsListRefrence() != null)
+                    getGoogleEventsListRefrence().getEvents(null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                googleEventsList.getEvents(events);
+                if (getGoogleEventsListRefrence() != null)
+                    getGoogleEventsListRefrence().getEvents(events);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -81,12 +84,12 @@ public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
     @Override
     protected void onCancelled() {
         super.onCancelled();
-     //   googleEventsList.showProgressBar(false);
+        //   googleEventsList.showProgressBar(false);
         if (mLastError != null) {
-            if (mLastError instanceof UserRecoverableAuthIOException) {
-                googleEventsList.onRecoverableAuthException((UserRecoverableAuthIOException) mLastError);
+            if (mLastError instanceof UserRecoverableAuthIOException && getGoogleEventsListRefrence() != null) {
+                getGoogleEventsListRefrence().onRecoverableAuthException((UserRecoverableAuthIOException) mLastError);
             } else {
-                  Log.d(TAG, "onCancelled: " + mLastError.getMessage());
+                Log.d(TAG, "onCancelled: " + mLastError.getMessage());
             }
         } else {
             Log.d(TAG, "onCancelled: " + "canceled");
@@ -104,5 +107,13 @@ public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
                 .setOrderBy("startTime").setSingleEvents(true).execute();
         //  Log.d(TAG, "getDataFromApi: " + events.getItems().toString());
         return events.getItems();
+    }
+
+    private GoogleEventsList getGoogleEventsListRefrence() {
+        GoogleEventsList googleEventsList = googleEventsListWeakReference.get();
+        if (googleEventsList == null || googleEventsList.getBaseActivity().isFinishing()) {
+            return null;
+        }
+        return googleEventsList;
     }
 }

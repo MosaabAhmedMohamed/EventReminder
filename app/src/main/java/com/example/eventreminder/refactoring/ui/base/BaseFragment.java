@@ -46,7 +46,7 @@ public abstract class BaseFragment extends DaggerFragment {
         return mActivity != null && mActivity.isNetworkConnected();
     }
 
-    public void setLoginStatus(boolean visibility) {
+    public void setLoadingStatus(boolean visibility) {
         if (mActivity != null) {
             if (visibility)
                 mActivity.showLoading();

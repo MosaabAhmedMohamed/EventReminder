@@ -1,30 +1,66 @@
 package com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList;
 
-import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.LiveDataReactiveStreams;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
-import com.example.eventreminder.old.Repositories.WeatherRepo;
-import com.example.eventreminder.old.Requests.Responses.WeatherResponse;
+import com.example.eventreminder.refactoring.SessionManager;
+import com.example.eventreminder.refactoring.data.models.WeatherResponse;
+import com.example.eventreminder.refactoring.network.Resource;
+import com.example.eventreminder.refactoring.network.WeatherApi.WeatherApi;
+import com.example.eventreminder.refactoring.util.Constants;
+
+import javax.inject.Inject;
+
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 public class GoogleListViewModel extends ViewModel {
-    private MutableLiveData<WeatherResponse> weatherResponseMutableLiveData;
-    private WeatherRepo weatherRepo;
+    private MediatorLiveData<Resource<WeatherResponse>> weatherResource;
 
-    public GoogleListViewModel() {
-        if (weatherResponseMutableLiveData != null)
-                  return;
-        weatherRepo = WeatherRepo.getInstance();
+    private WeatherApi weatherApi;
+    private SessionManager sessionManager;
+
+    @Inject
+    public GoogleListViewModel(WeatherApi weatherApi, SessionManager sessionManager) {
+        this.weatherApi = weatherApi;
+        this.sessionManager = sessionManager;
     }
 
 
-    public MutableLiveData<WeatherResponse> getForCastData(String cityName,String ApiKey,String numberOfDays)
-    {
-        weatherResponseMutableLiveData = weatherRepo.weatherResponseMutableLiveData(cityName,ApiKey,numberOfDays);
-        return weatherResponseMutableLiveData;
+    public LiveData<Resource<WeatherResponse>> observWeather() {
+        if (weatherResource == null) {
+            weatherResource = new MediatorLiveData<>();
+            weatherResource.postValue(Resource.loading(null));
+            final LiveData<Resource<WeatherResponse>> source = LiveDataReactiveStreams.fromPublisher(weatherApi
+                    .getWeatherByCityName("cairo", Constants.getInstance().openWeatherMapAPIKey, "40", "metric")
+                    .onErrorReturn(new Function<Throwable, WeatherResponse>() {
+                        @Override
+                        public WeatherResponse apply(Throwable throwable) throws Exception {
+                            WeatherResponse weatherResponse = new WeatherResponse();
+                            weatherResponse.setId(-1);
+                            return weatherResponse;
+                        }
+                    }).map(new Function<WeatherResponse, Resource<WeatherResponse>>() {
+                        @Override
+                        public Resource<WeatherResponse> apply(WeatherResponse weatherResponse) throws Exception {
+                            if (weatherResponse.getId() == -1) {
+                                return Resource.error("something went wrong", null);
+                            }
+                            return Resource.success(weatherResponse);
+                        }
+                    }).subscribeOn(Schedulers.io()));
+            weatherResource.addSource(source, new Observer<Resource<WeatherResponse>>() {
+                @Override
+                public void onChanged(Resource<WeatherResponse> weatherResponseResource) {
+                    weatherResource.setValue(weatherResponseResource);
+                    weatherResource.removeSource(source);
+                }
+            });
+        }
+        return weatherResource;
     }
 
-
-    public MutableLiveData<WeatherResponse> getWeatherResponseMutableLiveData() {
-        return weatherResponseMutableLiveData;
-    }
 }

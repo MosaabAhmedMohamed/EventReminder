@@ -1,4 +1,4 @@
-package com.example.eventreminder.old.Views.Dialog;
+package com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -14,7 +14,6 @@ import androidx.fragment.app.DialogFragment;
 
 import com.example.eventreminder.refactoring.data.models.EventDateTimeModel;
 import com.example.eventreminder.R;
-import com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.OnHandelOverlappingListner;
 import com.example.eventreminder.refactoring.util.Constants;
 
 import java.util.ArrayList;

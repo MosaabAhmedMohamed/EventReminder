@@ -1,7 +1,5 @@
-package com.example.eventreminder.old.Requests.Responses;
+package com.example.eventreminder.refactoring.data.models;
 
-import com.example.eventreminder.refactoring.data.models.CityEntity;
-import com.example.eventreminder.refactoring.data.models.ListEntity;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -10,6 +8,7 @@ import java.util.List;
 public class WeatherResponse {
 
 
+    private int id;
     @Expose
     @SerializedName("city")
     private CityEntity city;
@@ -44,5 +43,13 @@ public class WeatherResponse {
 
     public String getCod() {
         return cod;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
