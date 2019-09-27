@@ -14,6 +14,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.example.eventreminder.refactoring.data.models.EventDateTimeModel;
 import com.example.eventreminder.R;
+import com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.utils.OnHandelOverlappingListner;
 import com.example.eventreminder.refactoring.util.Constants;
 
 import java.util.ArrayList;
@@ -22,7 +23,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class OverlappingDailog extends DialogFragment {
+public class OverlappingDialog extends DialogFragment {
+
+    //private static final String TAG = "OverlappingDialog";
     @BindView(R.id.event_1_btn)
     Button event1Btn;
     @BindView(R.id.event_2_btn)
@@ -38,35 +41,37 @@ public class OverlappingDailog extends DialogFragment {
 
 
     private OnHandelOverlappingListner onHandelOverlappingListner;
-    private View view;
     private ArrayList<EventDateTimeModel> eventDateTimeModels;
     private int eventPosInList;
     private boolean isHandleEvent;
     private String userEmail;
 
-    public static OverlappingDailog newInstance(ArrayList<EventDateTimeModel> eventDateTimeModels, int position, String userEmail) {
-        OverlappingDailog overlappingDailog = new OverlappingDailog();
+    public static OverlappingDialog newInstance(ArrayList<EventDateTimeModel> eventDateTimeModels, int position, String userEmail) {
+        OverlappingDialog overlappingDialog = new OverlappingDialog();
         Bundle args = new Bundle();
         args.putParcelableArrayList(Constants.EVENT_ONE, eventDateTimeModels);
         args.putInt("pos", position);
         args.putString("userEmail", userEmail);
-        overlappingDailog.setArguments(args);
-        return overlappingDailog;
+        overlappingDialog.setArguments(args);
+        return overlappingDialog;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        view = inflater.inflate(R.layout.select_event_dialog, container, false);
+        return inflater.inflate(R.layout.select_event_dialog, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
         init();
-
-        return view;
     }
 
     private void init() {
-        if (getDialog().getWindow() != null && isAdded())
+        if (getDialog() != null && getDialog().getWindow() != null && isAdded())
             getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         if (getArguments() != null) {
             eventDateTimeModels = getArguments().getParcelableArrayList(Constants.EVENT_ONE);
@@ -89,7 +94,7 @@ public class OverlappingDailog extends DialogFragment {
         }
     }
 
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
             onHandelOverlappingListner = (OnHandelOverlappingListner) getTargetFragment();
@@ -100,19 +105,21 @@ public class OverlappingDailog extends DialogFragment {
 
     @OnClick({R.id.event_1_btn, R.id.event_2_btn, R.id.discard_btn})
     public void onViewClicked(View view) {
-        switch (view.getId()) {
-            case R.id.event_1_btn:
-                getDialog().dismiss();
-                onHandelOverlappingListner.onHandel(isHandleEvent, eventDateTimeModels.get(0), eventPosInList, Constants.SELECTED_EVENT_TO_RESCHDULE);
-                break;
-            case R.id.event_2_btn:
-                getDialog().dismiss();
-                onHandelOverlappingListner.onHandel(isHandleEvent, eventDateTimeModels.get(1), 0, Constants.SELECTED_EVENT_TO_RESCHDULE);
-                break;
-            case R.id.discard_btn:
-                getDialog().dismiss();
-                onHandelOverlappingListner.onHandel(false, eventDateTimeModels.get(0), eventPosInList, 0);
-                break;
+        if (getDialog() != null) {
+            switch (view.getId()) {
+                case R.id.event_1_btn:
+                    getDialog().dismiss();
+                    onHandelOverlappingListner.onHandel(isHandleEvent, eventDateTimeModels.get(0), eventPosInList, Constants.SELECTED_EVENT_TO_RESCHDULE);
+                    break;
+                case R.id.event_2_btn:
+                    getDialog().dismiss();
+                    onHandelOverlappingListner.onHandel(isHandleEvent, eventDateTimeModels.get(1), 0, Constants.SELECTED_EVENT_TO_RESCHDULE);
+                    break;
+                case R.id.discard_btn:
+                    getDialog().dismiss();
+                    onHandelOverlappingListner.onHandel(false, eventDateTimeModels.get(0), eventPosInList, 0);
+                    break;
+            }
         }
     }
 }

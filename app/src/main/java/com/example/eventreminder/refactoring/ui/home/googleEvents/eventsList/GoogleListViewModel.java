@@ -11,6 +11,7 @@ import com.example.eventreminder.refactoring.data.models.WeatherResponse;
 import com.example.eventreminder.refactoring.network.Resource;
 import com.example.eventreminder.refactoring.network.WeatherApi.WeatherApi;
 import com.example.eventreminder.refactoring.util.Constants;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 import javax.inject.Inject;
 
@@ -30,7 +31,7 @@ public class GoogleListViewModel extends ViewModel {
     }
 
 
-    public LiveData<Resource<WeatherResponse>> observWeather() {
+    public LiveData<Resource<WeatherResponse>> observeWeather() {
         if (weatherResource == null) {
             weatherResource = new MediatorLiveData<>();
             weatherResource.postValue(Resource.loading(null));
@@ -41,13 +42,14 @@ public class GoogleListViewModel extends ViewModel {
                         public WeatherResponse apply(Throwable throwable) throws Exception {
                             WeatherResponse weatherResponse = new WeatherResponse();
                             weatherResponse.setId(-1);
+                            weatherResponse.setNetworkMessage(throwable.getLocalizedMessage());
                             return weatherResponse;
                         }
                     }).map(new Function<WeatherResponse, Resource<WeatherResponse>>() {
                         @Override
                         public Resource<WeatherResponse> apply(WeatherResponse weatherResponse) throws Exception {
                             if (weatherResponse.getId() == -1) {
-                                return Resource.error("something went wrong", null);
+                                return Resource.error("something went wrong : " + weatherResponse.getNetworkMessage(), null);
                             }
                             return Resource.success(weatherResponse);
                         }
@@ -61,6 +63,17 @@ public class GoogleListViewModel extends ViewModel {
             });
         }
         return weatherResource;
+    }
+
+    public GoogleSignInAccount getAuthAccount() {
+        if (sessionManager.getAcc() == null) {
+            sessionManager.logOut();
+        }
+        return sessionManager.getAcc();
+    }
+
+    public void setGoogleAuthAccount(GoogleSignInAccount lastSignedInAccount) {
+        sessionManager.setAcc(lastSignedInAccount);
     }
 
 }

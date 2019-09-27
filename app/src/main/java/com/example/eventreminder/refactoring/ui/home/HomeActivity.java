@@ -1,21 +1,24 @@
 package com.example.eventreminder.refactoring.ui.home;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
-import androidx.navigation.ui.NavigationUI;
 
 import com.example.eventreminder.R;
 import com.example.eventreminder.refactoring.ui.base.BaseActivity;
 import com.example.eventreminder.refactoring.util.GooglePlayServiceUtils;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -38,14 +41,16 @@ public class HomeActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        setRootView(findViewById(R.id.container));
         ButterKnife.bind(this);
         init();
     }
 
 
     private void init() {
-
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.home, true).build();
         //NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout);
     }
 
@@ -64,7 +69,13 @@ public class HomeActivity extends BaseActivity {
 
     private void signOutFromGoogle() {
         GooglePlayServiceUtils.getGoogleSignInClient(this)
-                .signOut().addOnCompleteListener(task -> userAuthStatusObserver());
+                .signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                sessionManager.logOut();
+                navLoginScreen();
+            }
+        });
     }
 
     public void setTitleTv(String title) {

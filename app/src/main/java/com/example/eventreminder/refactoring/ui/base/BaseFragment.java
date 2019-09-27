@@ -55,4 +55,9 @@ public abstract class BaseFragment extends DaggerFragment {
         }
 
     }
+
+    public void showSnackBar(String message) {
+        mActivity.showSnackBar(message);
+    }
+
 }

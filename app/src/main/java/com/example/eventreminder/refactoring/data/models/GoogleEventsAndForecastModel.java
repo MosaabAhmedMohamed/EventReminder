@@ -33,6 +33,10 @@ public class GoogleEventsAndForecastModel {
         this.eventsModels = eventsModels;
     }
 
+    public void setEventDateTimeModels(ArrayList<EventDateTimeModel> eventDateTimeModels) {
+        this.eventDateTimeModels = eventDateTimeModels;
+    }
+
     public ArrayList<EventDateTimeModel> getEventDateTimeModels() {
         return eventDateTimeModels;
     }

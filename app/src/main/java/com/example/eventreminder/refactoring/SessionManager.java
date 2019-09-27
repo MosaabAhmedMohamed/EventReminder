@@ -1,5 +1,7 @@
 package com.example.eventreminder.refactoring;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
@@ -8,6 +10,8 @@ import com.example.eventreminder.refactoring.data.local.PreferencesHelper;
 import com.example.eventreminder.refactoring.data.models.User;
 import com.example.eventreminder.refactoring.ui.auth.AuthResource;
 import com.example.eventreminder.refactoring.util.Constants;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,6 +21,10 @@ import static com.example.eventreminder.refactoring.util.Constants.IS_USER_LOGGE
 @Singleton
 public class SessionManager {
     private MediatorLiveData<AuthResource<User>> cachedUser = new MediatorLiveData<>();
+    private GoogleSignInAccount acc;
+
+    @Inject
+    Context context;
 
     @Inject
     PreferencesHelper preferencesHelper;
@@ -32,7 +40,7 @@ public class SessionManager {
             cachedUser.addSource(source, new Observer<AuthResource<User>>() {
                 @Override
                 public void onChanged(AuthResource<User> userAuthResource) {
-                    preferencesHelper.putBoolean(IS_USER_LOGGED_IN_KEY,true);
+                    preferencesHelper.putBoolean(IS_USER_LOGGED_IN_KEY, true);
                     cachedUser.setValue(userAuthResource);
                     cachedUser.removeSource(source);
 
@@ -46,6 +54,7 @@ public class SessionManager {
     }
 
     public void logOut() {
+        acc = null;
         preferencesHelper.putBoolean(IS_USER_LOGGED_IN_KEY, false);
         cachedUser.setValue(AuthResource.<User>logout());
     }
@@ -54,4 +63,13 @@ public class SessionManager {
         return cachedUser;
     }
 
+    public GoogleSignInAccount getAcc() {
+        if (preferencesHelper.getBoolean(IS_USER_LOGGED_IN_KEY))
+            return acc = GoogleSignIn.getLastSignedInAccount(context);
+        return null;
+    }
+
+    public void setAcc(GoogleSignInAccount acc) {
+        this.acc = acc;
+    }
 }

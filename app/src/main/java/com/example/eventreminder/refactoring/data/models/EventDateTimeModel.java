@@ -2,6 +2,7 @@ package com.example.eventreminder.refactoring.data.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.google.api.services.calendar.model.Event;
 
@@ -17,7 +18,6 @@ public class EventDateTimeModel implements Parcelable {
         this.endTime = endTime;
         this.event = event;
         discard = false;
-
     }
 
     protected EventDateTimeModel(Parcel in) {

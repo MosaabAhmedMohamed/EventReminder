@@ -1,4 +1,4 @@
-package com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList;
+package com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.utils;
 
 import com.example.eventreminder.refactoring.data.models.EventDateTimeModel;
 public interface OnEventActionLIstner {

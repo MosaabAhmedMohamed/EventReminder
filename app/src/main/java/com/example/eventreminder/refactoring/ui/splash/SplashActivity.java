@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.animation.LinearInterpolator;
 import android.widget.ProgressBar;
+
 import androidx.lifecycle.ViewModelProviders;
+
 import com.example.eventreminder.R;
 import com.example.eventreminder.refactoring.ui.base.BaseActivity;
 import com.example.eventreminder.refactoring.ui.base.ViewModelProviderFactory;
@@ -34,8 +36,11 @@ public class SplashActivity extends BaseActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                splashVM.checkForSignIn();
-                userAuthStatusObserver();
+                if (splashVM.isLoggedIn()) {
+                    goToHome();
+                } else {
+                    navLoginScreen();
+                }
             }
         }, 2800);
     }

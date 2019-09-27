@@ -11,9 +11,6 @@
         android:label="Google Events List"
         tools:layout="@layout/events_list"
         >
-        <action
-            android:id="@+id/action_eventList_to_RescheduleOverlappedEvent"
-            app:destination="@id/RescheduleOverlappedEvent" />
     </fragment>
 
     <fragment
@@ -22,10 +19,6 @@
         android:label="Reschedule Event"
         tools:layout="@layout/reschdule_event"
         >
-        <action
-            android:id="@+id/action_RescheduleOverlappedEvent_to_eventList"
-            app:destination="@id/eventList"
-            app:popUpTo="@+id/eventList" />
     </fragment>
 
 </navigation>

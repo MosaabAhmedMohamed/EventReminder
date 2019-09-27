@@ -2,7 +2,6 @@ package com.example.eventreminder.refactoring.ui.home.googleEvents.reschduleEven
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,22 +15,25 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 
 import com.example.eventreminder.refactoring.data.models.EventDateTimeModel;
 import com.example.eventreminder.R;
 import com.example.eventreminder.refactoring.ui.base.BaseFragment;
 import com.example.eventreminder.refactoring.ui.home.HomeActivity;
+import com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.utils.EventsUtils;
 import com.example.eventreminder.refactoring.util.Constants;
+import com.example.eventreminder.refactoring.util.DateTimeUtils;
+import com.example.eventreminder.refactoring.util.NetworkUtils;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class RescheduleOverlappedEvent extends BaseFragment {
-    //private static final String TAG = "ReschudleOverlappedEven";
+public class RescheduleOverlappedEvent extends BaseFragment implements TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
+    // private static final String TAG = "ReschudleOverlappedEven";
 
     @BindView(R.id.desc_tv)
     TextView descTv;
@@ -50,20 +52,7 @@ public class RescheduleOverlappedEvent extends BaseFragment {
     private View view;
     private EventDateTimeModel selectedEventDateTimeModel;
     private ArrayList<EventDateTimeModel> eventDateTimeModels;
-
-    private Context context;
-    private int mYear, mMonth, mDay;
-    private int mHour, mMinute;
-    private String date, time, recipient,startEventFormattedTime;
-
-    public static RescheduleOverlappedEvent newInstance(ArrayList<EventDateTimeModel> eventDateTimeModels, EventDateTimeModel selectedEventDateTimeModel) {
-        RescheduleOverlappedEvent rescheduleOverlappedEvent = new RescheduleOverlappedEvent();
-        Bundle args = new Bundle();
-        args.putParcelableArrayList(Constants.EVENTS_MODEL, eventDateTimeModels);
-        args.putParcelable(Constants.EVENT_SELECTED_TO_EDIT, selectedEventDateTimeModel);
-        rescheduleOverlappedEvent.setArguments(args);
-        return rescheduleOverlappedEvent;
-    }
+    private String date, time, recipient, startEventFormattedTime;
 
     @Nullable
     @Override
@@ -72,25 +61,22 @@ public class RescheduleOverlappedEvent extends BaseFragment {
         if (view == null) {
             view = inflater.inflate(R.layout.reschdule_event, container, false);
             ButterKnife.bind(this, view);
-                init();
-
+            init();
         }
         return view;
     }
 
     private void init() {
-        if (getActivity() != null && isAdded())
-            context = getActivity();
-        ((HomeActivity) context).setTitleTv("Reschedule overlapped events");
-        //((HomeActivity) context).showProgressBar(false);
+        ((HomeActivity) getBaseActivity()).setTitleTv("Reschedule overlapped events");
         if (getArguments() != null) {
             eventDateTimeModels = getArguments().getParcelableArrayList(Constants.EVENTS_MODEL);
-            selectedEventDateTimeModel = getArguments().getParcelable(Constants.EVENT_SELECTED_TO_EDIT); }
+            selectedEventDateTimeModel = getArguments().getParcelable(Constants.EVENT_SELECTED_TO_EDIT);
+        }
 
-        startEventFormattedTime = Constants.getInstance().getFormattedTime(selectedEventDateTimeModel.getEvent().getStart().getDateTime().getValue());
+        startEventFormattedTime = DateTimeUtils.getFormattedTime(selectedEventDateTimeModel.getEvent().getStart().getDateTime().getValue());
 
         descTv.setText(getResources().getString(R.string.to_be_reschduled)
-                .concat(selectedEventDateTimeModel.getDay().concat(" " +startEventFormattedTime)));
+                .concat(selectedEventDateTimeModel.getDay().concat(" " + startEventFormattedTime)));
         recipient = selectedEventDateTimeModel.getEvent().getCreator().getEmail();
 
         date = selectedEventDateTimeModel.getDay();
@@ -98,19 +84,14 @@ public class RescheduleOverlappedEvent extends BaseFragment {
         confirmTv.setText(getResources().getString(R.string.Do_You_want_to_send_email_to).concat(" " + recipient));
     }
 
-    private void checkInternetSnackbar() {
-      //  if (getActivity() != null && isAdded())
-         //   ((HomeActivity) getActivity()).showIsOfflineSnackbar();
-    }
-
     @OnClick({R.id.date_tv, R.id.time_tv, R.id.confirm_tv, R.id.confirm_btn})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.date_tv:
-                datePicker();
+                showDatePicker();
                 break;
             case R.id.time_tv:
-                timePicker();
+                showTimePicker();
                 break;
             case R.id.confirm_btn:
                 validateTimeDate();
@@ -119,90 +100,27 @@ public class RescheduleOverlappedEvent extends BaseFragment {
     }
 
     private void validateTimeDate() {
-        /*if (!Constants.getInstance().isDeviceOnline(context)) {
-            checkInternetSnackbar();
+        if (!NetworkUtils.isNetworkConnected(getBaseActivity())) {
+            showSnackBar("check you'r internet connection");
         } else {
             if (time == null)
-                Toast.makeText(context, "Pleas select time", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseActivity(), "Pleas select time", Toast.LENGTH_SHORT).show();
             else if (date == null)
-                Toast.makeText(context, "Pleas select date", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseActivity(), "Pleas select date", Toast.LENGTH_SHORT).show();
             else
                 sendMail();
-        }*/
-    }
-
-    private void datePicker() {
-
-        // Get Current Date
-        final Calendar c = Calendar.getInstance();
-        mYear = c.get(Calendar.YEAR);
-        mMonth = c.get(Calendar.MONTH);
-        mDay = c.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                date = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
-                dateTv.setText(getResources().getString(R.string.Date).concat(" : ").concat(date));
-            }
-        }, mYear, mMonth, mDay);
-        datePickerDialog.show();
-    }
-
-    private void timePicker() {
-        // Get Current Time
-        final Calendar c = Calendar.getInstance();
-        mHour = c.get(Calendar.HOUR_OF_DAY);
-        mMinute = c.get(Calendar.MINUTE);
-        // Launch Time Picker Dialog
-        TimePickerDialog timePickerDialog = new TimePickerDialog(context,
-                new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        mHour = hourOfDay;
-                        mMinute = minute;
-                        time = hourOfDay + " : " + minute;
-
-                        if (!cheekForFreeTime(convertTimeToSeconds(minute, hourOfDay))) {
-                            Toast.makeText(context, "this time is not available", Toast.LENGTH_SHORT).show();
-                            timePicker();
-                        } else {
-                            time_tv.setText(getResources().getString(R.string.Time).concat(" : ").concat(time));
-                        }
-                    }
-                }, mHour, mMinute, false);
-        timePickerDialog.show();
-    }
-
-    private int convertTimeToSeconds(int minute, int hour) {
-        return (minute * 60) + (hour * 3600);
-    }
-
-
-    private boolean cheekForFreeTime(int eventStartTimeInSeconds) {
-        for (EventDateTimeModel eventDateTimeModel : eventDateTimeModels) {
-            if (date.equals(eventDateTimeModel.getDay())) {
-                if (eventStartTimeInSeconds < eventDateTimeModel.getStartTime() || eventStartTimeInSeconds > eventDateTimeModel.getEndTime()) {
-                    return true;
-                }
-            } else if (!date.equals(eventDateTimeModel.getDay())) {
-                if (eventStartTimeInSeconds < eventDateTimeModel.getStartTime() || eventStartTimeInSeconds > eventDateTimeModel.getEndTime()) {
-                    return true;
-                }
-            }
         }
-        return false;
     }
+
 
     private void sendMail() {
         String[] recipients = new String[2];
         recipients[0] = recipient;
         String subject = "Rescheduling event time ";
         String message = "Rescheduling event : ".concat(selectedEventDateTimeModel.getEvent().getSummary())
-                .concat("\n From Date "+selectedEventDateTimeModel.getDay().concat(" time ")
+                .concat("\n From Date " + selectedEventDateTimeModel.getDay().concat(" time ")
                         .concat(startEventFormattedTime))
-                        .concat("\nTo : ").concat("date " + date).concat(" time " + time);
+                .concat("\nTo : ").concat("date " + date).concat(" time " + time);
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.putExtra(Intent.EXTRA_EMAIL, recipients);
@@ -213,4 +131,33 @@ public class RescheduleOverlappedEvent extends BaseFragment {
         startActivity(Intent.createChooser(intent, "Choose an email client"));
     }
 
+    private void showTimePicker() {
+        DialogFragment timePicker = new com.example.eventreminder.refactoring.ui.custom.TimePicker();
+        timePicker.setTargetFragment(RescheduleOverlappedEvent.this, 1);
+        timePicker.show(getParentFragmentManager(), "time picker");
+    }
+
+    private void showDatePicker() {
+        DialogFragment timePicker = new com.example.eventreminder.refactoring.ui.custom.DatePicker();
+        timePicker.setTargetFragment(RescheduleOverlappedEvent.this, 2);
+        timePicker.show(getParentFragmentManager(), "date picker");
+    }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        time = hourOfDay + " : " + minute;
+
+        if (!EventsUtils.getInstance().cheekForFreeTimeForEvent(DateTimeUtils.getInstance().convertTimeToSeconds(minute, hourOfDay), date, eventDateTimeModels)) {
+            Toast.makeText(getBaseActivity(), "this time is not available", Toast.LENGTH_SHORT).show();
+            showTimePicker();
+        } else {
+            time_tv.setText(getResources().getString(R.string.Time).concat(" : ").concat(time));
+        }
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+        date = dayOfMonth + "-" + (month + 1) + "-" + year;
+        dateTv.setText(getResources().getString(R.string.Date).concat(" : ").concat(date));
+    }
 }

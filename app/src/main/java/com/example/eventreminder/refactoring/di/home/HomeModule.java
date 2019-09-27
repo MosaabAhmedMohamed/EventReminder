@@ -1,6 +1,7 @@
 package com.example.eventreminder.refactoring.di.home;
 
 
+import com.bumptech.glide.RequestManager;
 import com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.GoogleEventsListAdapter;
 import com.example.eventreminder.refactoring.network.WeatherApi.WeatherApi;
 
@@ -14,16 +15,13 @@ public abstract class HomeModule {
 
     @HomeScope
     @Provides
-    static WeatherApi provideWeatherApi(Retrofit retrofit)
-    {
+    static WeatherApi provideWeatherApi(Retrofit retrofit) {
         return retrofit.create(WeatherApi.class);
     }
 
     @HomeScope
     @Provides
-    static GoogleEventsListAdapter provideGoogleEventsListAdapter()
-    {
-        return new GoogleEventsListAdapter();
+    static GoogleEventsListAdapter provideGoogleEventsListAdapter(RequestManager manager) {
+        return new GoogleEventsListAdapter(manager);
     }
-
 }

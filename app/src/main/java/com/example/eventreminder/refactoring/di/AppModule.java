@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 
 import androidx.core.content.ContextCompat;
 
@@ -76,7 +77,7 @@ public class AppModule {
     @Singleton
     @Provides
     static RequestOptions provideRequestOptions() {
-        return RequestOptions.placeholderOf(R.drawable.white_square_shape)
+        return RequestOptions.placeholderOf(R.drawable.ic_launcher_background)
                 .error(R.drawable.black_square_shape);
     }
 
@@ -93,7 +94,6 @@ public class AppModule {
     }
 
 
-
     @Provides
     @Singleton
     static Context provideContext(Application application) {
@@ -104,7 +104,7 @@ public class AppModule {
     @Provides
     @Singleton
     static SharedPreferences provideSharedPreferences(Context context) {
-        return context.getSharedPreferences(Constants.PREF_NAME,Context.MODE_PRIVATE);
+        return context.getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE);
     }
 
     //GSON
@@ -112,5 +112,11 @@ public class AppModule {
     @Singleton
     Gson provideGson() {
         return new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+    }
+
+    @Provides
+    @Singleton
+    Bundle provideBundle() {
+        return new Bundle();
     }
 }

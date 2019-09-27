@@ -7,8 +7,8 @@ import java.util.List;
 
 public class WeatherResponse {
 
-
     private int id;
+    private String networkMessage;
     @Expose
     @SerializedName("city")
     private CityEntity city;
@@ -51,5 +51,13 @@ public class WeatherResponse {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getNetworkMessage() {
+        return networkMessage;
+    }
+
+    public void setNetworkMessage(String networkMessage) {
+        this.networkMessage = networkMessage;
     }
 }
