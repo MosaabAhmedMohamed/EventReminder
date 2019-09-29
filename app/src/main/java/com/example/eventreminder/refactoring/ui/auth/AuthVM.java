@@ -34,4 +34,9 @@ public class AuthVM extends ViewModel {
     public void checkForSignIn(GoogleSignInAccount account) {
         sessionManager.authenticateGoogleUser(signedInAccount(account));
     }
+
+    public LiveData<AuthResource<User>> getAuthUser()
+    {
+        return sessionManager.getAuthUser();
+    }
 }

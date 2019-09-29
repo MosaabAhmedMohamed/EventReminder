@@ -36,9 +36,9 @@ public abstract class BaseActivity extends DaggerAppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: " + this.getClass().getSimpleName());
-        if (!this.getClass().getSimpleName().equals(HomeActivity.class.getSimpleName()))
-            userAuthStatusObserver();
+        Log.d("testtest", "onCreate: " + this.getClass().getSimpleName());
+       /* if (!this.getClass().getSimpleName().equals(HomeActivity.class.getSimpleName()))
+            userAuthStatusObserver();*/
     }
 
     protected void userAuthStatusObserver() {
@@ -55,9 +55,11 @@ public abstract class BaseActivity extends DaggerAppCompatActivity {
                         case AUTHENTICATED: {
                             Log.d(TAG, "onChanged: BaseActivity: AUTHENTICATED... " +
                                     "Authenticated as: "); //+; userAuthResource.data.getEmail());
-                            if (!this.getClass().getSimpleName().equals(HomeActivity.class.getSimpleName())) {
+                            /*if (!this.getClass().getSimpleName().equals(HomeActivity.class.getSimpleName())) {
                                 goToHome();
-                            }
+                            }*/
+                          /*  if (!this.getClass().getSimpleName().equals(HomeActivity.class.getSimpleName()))
+                                goToHome();*/
                             hideLoading();
                             break;
                         }
@@ -69,9 +71,8 @@ public abstract class BaseActivity extends DaggerAppCompatActivity {
                         case NOT_AUTHENTICATED: {
                             Log.d(TAG, "onChanged: BaseActivity: NOT AUTHENTICATED. Navigating to AuthActivity screen.");
                             hideLoading();
-                            if (!this.getClass().getSimpleName().equals(AuthActivity.class.getSimpleName())) {
+                            if (!this.getClass().getSimpleName().equals(AuthActivity.class.getSimpleName()))
                                 navLoginScreen();
-                            }
                             break;
                         }
                     }
@@ -89,7 +90,6 @@ public abstract class BaseActivity extends DaggerAppCompatActivity {
         startActivity(new Intent(this, AuthActivity.class));
         finish();
         // sessionManager.logOut();
-
     }
 
     public void hideLoading() {

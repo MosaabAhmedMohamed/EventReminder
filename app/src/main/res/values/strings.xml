@@ -26,4 +26,8 @@
     <string name="Do_You_want_to_send_email_to">Do you want to send email to :</string>
     <string name="confirm">Confirm</string>
     <string name="event_creator">Event creator</string>
+    <string name="your_email">Your Email</string>
+    <string name="name">User Name</string>
+    <string name="profile">Profile</string>
+    <string name="events_list">Events</string>
 </resources>

@@ -9,16 +9,20 @@
         android:id="@+id/eventList"
         android:name="com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.GoogleEventsList"
         android:label="Google Events List"
-        tools:layout="@layout/events_list"
-        >
-    </fragment>
+        tools:layout="@layout/events_list"></fragment>
 
     <fragment
         android:id="@+id/RescheduleOverlappedEvent"
         android:name="com.example.eventreminder.refactoring.ui.home.googleEvents.reschduleEvent.RescheduleOverlappedEvent"
         android:label="Reschedule Event"
-        tools:layout="@layout/reschdule_event"
-        >
+        tools:layout="@layout/reschdule_event"></fragment>
+
+    <fragment
+        android:id="@+id/profile"
+        android:name="com.example.eventreminder.refactoring.ui.home.profile.UserProfile"
+        android:label="Profile"
+        tools:layout="@layout/profile">
+
     </fragment>
 
 </navigation>

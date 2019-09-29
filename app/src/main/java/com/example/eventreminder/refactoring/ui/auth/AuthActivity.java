@@ -3,12 +3,15 @@ package com.example.eventreminder.refactoring.ui.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.eventreminder.R;
+import com.example.eventreminder.refactoring.data.models.User;
 import com.example.eventreminder.refactoring.ui.base.BaseActivity;
 import com.example.eventreminder.refactoring.ui.base.ViewModelProviderFactory;
 import com.example.eventreminder.refactoring.util.GooglePlayServiceUtils;
@@ -42,6 +45,8 @@ public class AuthActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("testtest", "onCreate: " + this.getClass().getSimpleName());
+
         setContentView(R.layout.activity_login);
         authVM = ViewModelProviders.of(this, providerFactory).get(AuthVM.class);
         ButterKnife.bind(this);
@@ -53,8 +58,23 @@ public class AuthActivity extends BaseActivity {
         if (!GooglePlayServiceUtils.isGooglePlayServicesAvailable(this)) {
             GooglePlayServiceUtils.acquireGooglePlayServices(this);
         }
-    }
 
+        observuserprofile();
+    }
+    private void observuserprofile() {
+        authVM.getAuthUser().observe(this, new Observer<AuthResource<User>>() {
+            @Override
+            public void onChanged(AuthResource<User> userAuthResource) {
+                if (userAuthResource != null) {
+                    switch (userAuthResource.status) {
+                        case AUTHENTICATED: {
+                           goToHome();
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     private void signIn() {
         Intent signInIntent = GooglePlayServiceUtils.getGoogleSignInClient(this).getSignInIntent();
@@ -74,7 +94,6 @@ public class AuthActivity extends BaseActivity {
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 authVM.checkForSignIn(account);
-                userAuthStatusObserver();
             } catch (ApiException e) {
                 e.printStackTrace();
                 //Log.w(TAG, "handleSignInResult:error", e);

@@ -12,6 +12,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
 
 import com.example.eventreminder.R;
 import com.example.eventreminder.refactoring.ui.base.BaseActivity;
@@ -35,7 +36,12 @@ public class HomeActivity extends BaseActivity {
     DrawerLayout drawerLayout;
     @BindView(R.id.title_tv)
     TextView titleTv;
+    @BindView(R.id.user_profile_btn)
+    Button userProfileBtn;
+    @BindView(R.id.events_list_btn)
+    Button eventsListBtn;
 
+    private NavOptions navOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,25 +52,10 @@ public class HomeActivity extends BaseActivity {
         init();
     }
 
-
     private void init() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.home, true).build();
+        navOptions = new NavOptions.Builder().setPopUpTo(R.id.home, true).build();
         //NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout);
-    }
-
-    @OnClick({R.id.menu, R.id.out_from_google_btn})
-    public void onViewClicked(View view) {
-        switch (view.getId()) {
-            case R.id.out_from_google_btn:
-                signOutFromGoogle();
-                drawerLayout.openDrawer(GravityCompat.START);
-                break;
-            case R.id.menu:
-                drawerLayout.openDrawer(GravityCompat.START);
-                break;
-        }
     }
 
     private void signOutFromGoogle() {
@@ -91,4 +82,30 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
+    @OnClick({R.id.user_profile_btn, R.id.events_list_btn, R.id.menu, R.id.out_from_google_btn})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.out_from_google_btn:
+                signOutFromGoogle();
+                drawerLayout.closeDrawer(GravityCompat.START);
+                break;
+            case R.id.menu:
+                drawerLayout.openDrawer(GravityCompat.START);
+                break;
+            case R.id.user_profile_btn:
+                drawerLayout.closeDrawer(GravityCompat.START);
+                if (isValidateDestination(R.id.profile)) {
+                    Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.profile);
+                }
+                break;
+            case R.id.events_list_btn:
+                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.eventList, null, navOptions);
+                drawerLayout.closeDrawer(GravityCompat.START);
+                break;
+        }
+    }
+
+    private boolean isValidateDestination(int destination) {
+        return destination != Navigation.findNavController(this, R.id.nav_host_fragment).getCurrentDestination().getId();
+    }
 }
