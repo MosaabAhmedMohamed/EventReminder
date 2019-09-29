@@ -30,4 +30,7 @@
     <string name="name">User Name</string>
     <string name="profile">Profile</string>
     <string name="events_list">Events</string>
+    <string name="enter_current_city_name">Enter your current city name</string>
+    <string name="city_name">City Name</string>
+    <string name="city">City</string>
 </resources>

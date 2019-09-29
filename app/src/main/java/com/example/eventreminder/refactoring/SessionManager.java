@@ -1,6 +1,7 @@
 package com.example.eventreminder.refactoring;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -20,6 +21,7 @@ import static com.example.eventreminder.refactoring.util.Constants.IS_USER_LOGGE
 
 @Singleton
 public class SessionManager {
+    private static final String TAG = "SessionManager";
     private MediatorLiveData<AuthResource<User>> cachedUser = new MediatorLiveData<>();
     private GoogleSignInAccount acc;
 
@@ -43,10 +45,12 @@ public class SessionManager {
                     preferencesHelper.putBoolean(IS_USER_LOGGED_IN_KEY, true);
                     cachedUser.setValue(userAuthResource);
                     cachedUser.removeSource(source);
-
+                    Log.d(TAG, "onChanged: 1");
+                    
                     if (userAuthResource.status.equals(AuthResource.AuthStatus.ERROR)) {
                         cachedUser.setValue(AuthResource.<User>logout());
                         preferencesHelper.putBoolean(IS_USER_LOGGED_IN_KEY, false);
+                        Log.d(TAG, "onChanged: 2");
                     }
                 }
             });

@@ -1,11 +1,8 @@
 package com.example.eventreminder.refactoring.ui.home.profile;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
-
 import com.example.eventreminder.refactoring.SessionManager;
-import com.example.eventreminder.refactoring.data.models.User;
-import com.example.eventreminder.refactoring.ui.auth.AuthResource;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 import javax.inject.Inject;
 
@@ -18,9 +15,9 @@ public class ProfileVM extends ViewModel {
         this.sessionManager = sessionManager;
     }
 
-    public LiveData<AuthResource<User>> getAuthUser()
+    public GoogleSignInAccount getUserProfile()
     {
-        return sessionManager.getAuthUser();
+        return sessionManager.getAcc();
     }
 
 

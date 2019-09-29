@@ -36,7 +36,6 @@ public abstract class BaseActivity extends DaggerAppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("testtest", "onCreate: " + this.getClass().getSimpleName());
        /* if (!this.getClass().getSimpleName().equals(HomeActivity.class.getSimpleName()))
             userAuthStatusObserver();*/
     }

@@ -77,8 +77,8 @@ public class AppModule {
     @Singleton
     @Provides
     static RequestOptions provideRequestOptions() {
-        return RequestOptions.placeholderOf(R.drawable.ic_launcher_background)
-                .error(R.drawable.black_square_shape);
+        return RequestOptions.placeholderOf(R.drawable.logo)
+                .error(R.drawable.logo);
     }
 
     @Singleton

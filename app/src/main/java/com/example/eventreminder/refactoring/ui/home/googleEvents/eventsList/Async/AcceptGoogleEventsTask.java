@@ -28,8 +28,6 @@ public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
         googleEventsListWeakReference = new WeakReference<>(googleEventsList);
         this.googleCalendar = googleCalendar;
         this.calendarEvent = event;
-
-        //Log.d(TAG, "AcceptGoogleEventsTask: " + event.getAttendees().toString());
     }
 
     @Override
@@ -40,8 +38,6 @@ public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
             // Log.d(TAG, "doInBackground: ");
         } catch (IOException e) {
             e.printStackTrace();
-            // Log.d(TAG, "doInBackground: ");
-            // Log.d(TAG, "doInBackground: " + e.getMessage());
         }
 
         try {
@@ -87,7 +83,6 @@ public class AcceptGoogleEventsTask extends AsyncTask<Void, Void, List<Event>> {
     @Override
     protected void onCancelled() {
         super.onCancelled();
-        //   googleEventsList.showProgressBar(false);
         if (mLastError != null && getGoogleEventsListRefrence() != null) {
             getGoogleEventsListRefrence().setLoadingStatus(false);
             if (mLastError instanceof UserRecoverableAuthIOException) {

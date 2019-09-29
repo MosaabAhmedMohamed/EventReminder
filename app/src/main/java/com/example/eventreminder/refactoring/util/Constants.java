@@ -19,6 +19,7 @@ public class Constants {
     public static final String PREF_NAME = "mydagger1thexampel_pref";
     public static final String IS_USER_LOGGED_IN_KEY = "LOGGED_IN_KEY";
     public static final String USER_DATA_KEY = "USER_DATA";
+    public static final String USER_CITY_KEY = "USER_CITY";
 
     public static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
 

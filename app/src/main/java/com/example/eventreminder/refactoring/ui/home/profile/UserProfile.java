@@ -1,6 +1,6 @@
 package com.example.eventreminder.refactoring.ui.home.profile;
 
-import android.content.Intent;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,17 +10,15 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.bumptech.glide.RequestManager;
 import com.example.eventreminder.R;
-import com.example.eventreminder.refactoring.data.models.User;
-import com.example.eventreminder.refactoring.ui.auth.AuthActivity;
-import com.example.eventreminder.refactoring.ui.auth.AuthResource;
 import com.example.eventreminder.refactoring.ui.base.BaseFragment;
 import com.example.eventreminder.refactoring.ui.base.ViewModelProviderFactory;
 import com.example.eventreminder.refactoring.ui.home.HomeActivity;
 import com.example.eventreminder.refactoring.util.CircularImageView;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 import javax.inject.Inject;
 
@@ -29,6 +27,9 @@ import butterknife.ButterKnife;
 
 public class UserProfile extends BaseFragment {
     private static final String TAG = "UserProfile";
+
+    @Inject
+    RequestManager requestManager;
     @Inject
     ViewModelProviderFactory providerFactory;
     private ProfileVM profileVM;
@@ -57,34 +58,26 @@ public class UserProfile extends BaseFragment {
 
     private void init() {
 
-        observUserProfile();
+        getUserProfile();
     }
 
-    private void observUserProfile() {
-        profileVM.getAuthUser().observe(getViewLifecycleOwner(), new Observer<AuthResource<User>>() {
-            @Override
-            public void onChanged(AuthResource<User> userAuthResource) {
-                if (userAuthResource != null) {
-                    switch (userAuthResource.status) {
-                        case AUTHENTICATED: {
-                            if (userAuthResource.data != null) {
-                                setUserData(userAuthResource.data);
-                            }
-                            Log.d(TAG, "onChanged: 1");
-                        }
-                        case NOT_AUTHENTICATED: {
-                            startActivity(new Intent(getBaseActivity(), AuthActivity.class));
-                            getBaseActivity().finish();
-                            Log.d(TAG, "onChanged: 2");
-                        }
-                    }
-                }
-            }
-        });
+    private void getUserProfile() {
+        if (profileVM.getUserProfile() != null) {
+            setUserData(profileVM.getUserProfile());
+        } else {
+            navLoginScreen();
+        }
     }
 
-    private void setUserData(User user) {
-        emailEdt.setText(user.getAccount());
-        fristNameEdt.setText(user.getName());
+
+    private void setUserData(GoogleSignInAccount user) {
+        try {
+            Log.d(TAG, "setUserData: "+user.getPhotoUrl());
+            emailEdt.setText(user.getAccount().name);
+            fristNameEdt.setText(user.getDisplayName());
+            requestManager.load(user.getPhotoUrl()).into(userImageView);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
     }
 }

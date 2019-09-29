@@ -56,6 +56,11 @@ public abstract class BaseFragment extends DaggerFragment {
 
     }
 
+    protected void navLoginScreen() {
+        if (mActivity != null)
+            mActivity.navLoginScreen();
+    }
+
     public void showSnackBar(String message) {
         mActivity.showSnackBar(message);
     }

@@ -32,7 +32,7 @@ import static com.example.eventreminder.refactoring.util.Constants.RC_SIGN_IN;
 import static com.example.eventreminder.refactoring.util.Constants.REQUEST_GOOGLE_PLAY_SERVICES;
 
 public class AuthActivity extends BaseActivity {
-    //private static final String TAG = "AuthActivity";
+    private static final String TAG = "AuthActivity";
 
     @Inject
     ViewModelProviderFactory providerFactory;
@@ -45,8 +45,6 @@ public class AuthActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("testtest", "onCreate: " + this.getClass().getSimpleName());
-
         setContentView(R.layout.activity_login);
         authVM = ViewModelProviders.of(this, providerFactory).get(AuthVM.class);
         ButterKnife.bind(this);
@@ -59,9 +57,9 @@ public class AuthActivity extends BaseActivity {
             GooglePlayServiceUtils.acquireGooglePlayServices(this);
         }
 
-        observuserprofile();
+        observUserProfile();
     }
-    private void observuserprofile() {
+    private void observUserProfile() {
         authVM.getAuthUser().observe(this, new Observer<AuthResource<User>>() {
             @Override
             public void onChanged(AuthResource<User> userAuthResource) {

@@ -208,7 +208,6 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         }
     }
 
-
     private void callEventsListAdapter(List<Event> events, int type) {
         if (events == null || events.size() == 0 && type != PAGING_EVENTS) {
             listViewStatusTv.setVisibility(View.VISIBLE);

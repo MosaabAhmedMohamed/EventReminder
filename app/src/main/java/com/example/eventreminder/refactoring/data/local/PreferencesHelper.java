@@ -45,8 +45,14 @@ public class PreferencesHelper {
         preferences.edit().clear().apply();
     }
 
-    public void removeKey(@NonNull String key)
-    {
+    public void removeKey(@NonNull String key) {
         preferences.edit().remove(key).apply();
     }
+
+    public boolean containKey(String key) {
+        if (preferences.contains(key))
+            return true;
+        return false;
+    }
+
 }

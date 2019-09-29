@@ -12,10 +12,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
-import androidx.navigation.ui.NavigationUI;
 
 import com.example.eventreminder.R;
 import com.example.eventreminder.refactoring.ui.base.BaseActivity;
+import com.example.eventreminder.refactoring.ui.home.city.EventCityDialog;
 import com.example.eventreminder.refactoring.util.GooglePlayServiceUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -38,6 +38,8 @@ public class HomeActivity extends BaseActivity {
     TextView titleTv;
     @BindView(R.id.user_profile_btn)
     Button userProfileBtn;
+    @BindView(R.id.city_btn)
+    Button cityBtn;
     @BindView(R.id.events_list_btn)
     Button eventsListBtn;
 
@@ -82,7 +84,7 @@ public class HomeActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.user_profile_btn, R.id.events_list_btn, R.id.menu, R.id.out_from_google_btn})
+    @OnClick({R.id.user_profile_btn, R.id.events_list_btn, R.id.menu, R.id.out_from_google_btn, R.id.city_btn})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.out_from_google_btn:
@@ -102,10 +104,19 @@ public class HomeActivity extends BaseActivity {
                 Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.eventList, null, navOptions);
                 drawerLayout.closeDrawer(GravityCompat.START);
                 break;
+            case R.id.city_btn:
+                showCityDialog();
+                drawerLayout.closeDrawer(GravityCompat.START);
+                break;
         }
     }
 
     private boolean isValidateDestination(int destination) {
         return destination != Navigation.findNavController(this, R.id.nav_host_fragment).getCurrentDestination().getId();
+    }
+
+    private void showCityDialog() {
+        EventCityDialog cityDialog = EventCityDialog.newInstance();
+        cityDialog.show(getSupportFragmentManager(), "cityDialog");
     }
 }
