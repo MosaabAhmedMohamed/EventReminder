@@ -63,8 +63,8 @@ public class HomeActivity extends BaseActivity {
                 .signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                sessionManager.logOut();
                 navLoginScreen();
+                sessionManager.logOut();
             }
         });
     }

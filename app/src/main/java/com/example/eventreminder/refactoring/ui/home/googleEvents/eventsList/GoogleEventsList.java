@@ -120,7 +120,10 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
         eventsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
         googleEventsListAdapter.setOnEventActionLIstner(this);
         googleEventsAndForecastModel = new GoogleEventsAndForecastModel();
-        googleEventsListAdapter.setLoggedInUserEmail(googleListViewModel.getAuthAccount().getEmail());
+        if (googleListViewModel.getAuthAccount() != null)
+            googleEventsListAdapter.setLoggedInUserEmail(googleListViewModel.getAuthAccount().getEmail());
+        else
+            navLoginScreen();
     }
 
     private void initRefreshLayout() {
@@ -145,12 +148,14 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
                         }
                         case SUCCESS: {
                             // Log.d(TAG, "onChanged: get posts" + weatherResponseResource.data.getList().toString());
+                            stopSwipeRefresh();
                             setLoadingStatus(false);
                             googleEventsAndForecastModel.setForecastModels(applyKeyValuePairForDateAndModel(weatherResponseResource.data.getList()));
                             initCalendarAndGetEventsFromApi();
                             break;
                         }
                         case ERROR: {
+                            stopSwipeRefresh();
                             setLoadingStatus(false);
                             showSnackBar(weatherResponseResource.message);
                             break;
@@ -278,8 +283,13 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
             swipeRefreshLayout.setRefreshing(true);
             reInitGoogleEventsTask();
         } else {
-            swipeRefreshLayout.setRefreshing(false);
+            stopSwipeRefresh();
         }
+    }
+
+    private void stopSwipeRefresh() {
+        if (swipeRefreshLayout.isRefreshing())
+            swipeRefreshLayout.setRefreshing(false);
     }
 
     private void reInitGoogleEventsTask() {
@@ -333,5 +343,11 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
 
     public void onErrorResponse(String message) {
         Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    protected void navLoginScreen() {
+        startActivity(new Intent(getBaseActivity(), AuthActivity.class));
+        getBaseActivity().finish();
+        // sessionManager.logOut();
     }
 }

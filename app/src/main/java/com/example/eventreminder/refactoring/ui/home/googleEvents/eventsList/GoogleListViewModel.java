@@ -68,6 +68,7 @@ public class GoogleListViewModel extends ViewModel {
     public GoogleSignInAccount getAuthAccount() {
         if (sessionManager.getAcc() == null) {
             sessionManager.logOut();
+            return null;
         }
         return sessionManager.getAcc();
     }
