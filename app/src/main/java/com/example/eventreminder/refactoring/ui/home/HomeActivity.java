@@ -1,6 +1,7 @@
 package com.example.eventreminder.refactoring.ui.home;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -9,24 +10,33 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 
 import com.example.eventreminder.R;
 import com.example.eventreminder.refactoring.ui.base.BaseActivity;
+import com.example.eventreminder.refactoring.ui.base.ViewModelProviderFactory;
 import com.example.eventreminder.refactoring.ui.home.city.EventCityDialog;
+import com.example.eventreminder.refactoring.ui.home.city.OnCitySelectedListner;
 import com.example.eventreminder.refactoring.util.GooglePlayServiceUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 
-public class HomeActivity extends BaseActivity {
+public class HomeActivity extends BaseActivity implements OnCitySelectedListner {
     private static final String TAG = "HomeActivity";
+
+    @Inject
+    ViewModelProviderFactory providerFactory;
+    HomeVM homeVM;
 
     @BindView(R.id.menu)
     ImageView menu;
@@ -55,6 +65,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void init() {
+        homeVM = ViewModelProviders.of(this, providerFactory).get(HomeVM.class);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         navOptions = new NavOptions.Builder().setPopUpTo(R.id.home, true).build();
         //NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout);
@@ -116,7 +127,13 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void showCityDialog() {
-        EventCityDialog cityDialog = EventCityDialog.newInstance();
+        EventCityDialog cityDialog = EventCityDialog.newInstance(homeVM.getCityName());
         cityDialog.show(getSupportFragmentManager(), "cityDialog");
+    }
+
+    @Override
+    public void onSelected(String cityName) {
+        homeVM.setCityName(cityName);
+        Log.d(TAG, "onSelected: " + cityName);
     }
 }

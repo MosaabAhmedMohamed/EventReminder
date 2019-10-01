@@ -76,4 +76,8 @@ public class SessionManager {
     public void setAcc(GoogleSignInAccount acc) {
         this.acc = acc;
     }
+
+    public PreferencesHelper getPreferencesHelper() {
+        return preferencesHelper;
+    }
 }

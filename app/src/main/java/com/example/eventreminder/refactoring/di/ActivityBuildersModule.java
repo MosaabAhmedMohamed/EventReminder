@@ -29,5 +29,5 @@ public abstract class ActivityBuildersModule {
 
     @HomeScope
     @ContributesAndroidInjector(modules = {HomeFragmentsBuilderModule.class, HomeModule.class, HomeViewModelsModule.class})
-    abstract HomeActivity  contrbuteHomeActivity();
+    abstract HomeActivity contrbuteHomeActivity();
 }

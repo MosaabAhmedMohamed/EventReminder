@@ -72,7 +72,6 @@ public class UserProfile extends BaseFragment {
 
     private void setUserData(GoogleSignInAccount user) {
         try {
-            Log.d(TAG, "setUserData: "+user.getPhotoUrl());
             emailEdt.setText(user.getAccount().name);
             fristNameEdt.setText(user.getDisplayName());
             requestManager.load(user.getPhotoUrl()).into(userImageView);

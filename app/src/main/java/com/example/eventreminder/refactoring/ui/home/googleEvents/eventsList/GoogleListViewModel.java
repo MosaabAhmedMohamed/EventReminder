@@ -7,6 +7,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.example.eventreminder.refactoring.SessionManager;
+import com.example.eventreminder.refactoring.data.models.User;
 import com.example.eventreminder.refactoring.data.models.WeatherResponse;
 import com.example.eventreminder.refactoring.network.Resource;
 import com.example.eventreminder.refactoring.network.WeatherApi.WeatherApi;
@@ -17,6 +18,9 @@ import javax.inject.Inject;
 
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+
+import static com.example.eventreminder.refactoring.util.Constants.USER_CITY_KEY;
+import static com.example.eventreminder.refactoring.util.Constants.USER_DATA_KEY;
 
 public class GoogleListViewModel extends ViewModel {
     private MediatorLiveData<Resource<WeatherResponse>> weatherResource;
@@ -30,13 +34,12 @@ public class GoogleListViewModel extends ViewModel {
         this.sessionManager = sessionManager;
     }
 
-
     public LiveData<Resource<WeatherResponse>> observeWeather() {
         if (weatherResource == null) {
             weatherResource = new MediatorLiveData<>();
             weatherResource.postValue(Resource.loading(null));
             final LiveData<Resource<WeatherResponse>> source = LiveDataReactiveStreams.fromPublisher(weatherApi
-                    .getWeatherByCityName("cairo", Constants.getInstance().openWeatherMapAPIKey, "40", "metric")
+                    .getWeatherByCityName(cityName(), Constants.getInstance().openWeatherMapAPIKey, "40", "metric")
                     .onErrorReturn(new Function<Throwable, WeatherResponse>() {
                         @Override
                         public WeatherResponse apply(Throwable throwable) throws Exception {
@@ -77,4 +80,10 @@ public class GoogleListViewModel extends ViewModel {
         sessionManager.setAcc(lastSignedInAccount);
     }
 
+    private String cityName() {
+        if (!sessionManager.getPreferencesHelper().containKey(USER_CITY_KEY)) {
+            sessionManager.getPreferencesHelper().putString(USER_CITY_KEY, "cairo");
+        }
+        return sessionManager.getPreferencesHelper().getString(USER_CITY_KEY);
+    }
 }

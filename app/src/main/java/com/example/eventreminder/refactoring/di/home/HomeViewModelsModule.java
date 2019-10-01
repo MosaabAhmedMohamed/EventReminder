@@ -2,6 +2,7 @@ package com.example.eventreminder.refactoring.di.home;
 
 import androidx.lifecycle.ViewModel;
 
+import com.example.eventreminder.refactoring.ui.home.HomeVM;
 import com.example.eventreminder.refactoring.ui.home.googleEvents.eventsList.GoogleListViewModel;
 import com.example.eventreminder.refactoring.di.ViewModelKey;
 import com.example.eventreminder.refactoring.ui.home.profile.ProfileVM;
@@ -22,4 +23,9 @@ public abstract class HomeViewModelsModule {
     @IntoMap
     @ViewModelKey(ProfileVM.class)
     public abstract ViewModel bindProfileVM(ProfileVM profileVM);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(HomeVM.class)
+    public abstract ViewModel bindHomeVM(HomeVM homeVM);
 }

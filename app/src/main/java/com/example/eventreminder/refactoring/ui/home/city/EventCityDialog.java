@@ -1,31 +1,29 @@
 package com.example.eventreminder.refactoring.ui.home.city;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.eventreminder.R;
-import com.example.eventreminder.refactoring.data.local.PreferencesHelper;
-import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.example.eventreminder.refactoring.util.Constants.USER_CITY_KEY;
-
 public class EventCityDialog extends DialogFragment {
 
-    @Inject
-    PreferencesHelper preferencesHelper;
+    private OnCitySelectedListner onCitySelectedListner;
 
     @BindView(R.id.title_tv)
     TextView titleTv;
@@ -36,8 +34,25 @@ public class EventCityDialog extends DialogFragment {
     @BindView(R.id.discard_btn)
     Button discardBtn;
 
-    public static EventCityDialog newInstance() {
-        return new EventCityDialog();
+
+    public static EventCityDialog newInstance(String cityName) {
+        EventCityDialog eventCityDialog = new EventCityDialog();
+        if (cityName != null) {
+            Bundle args = new Bundle();
+            args.putString("USER_CITY_KEY", cityName);
+            eventCityDialog.setArguments(args);
+        }
+        return eventCityDialog;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            onCitySelectedListner = (OnCitySelectedListner) context;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Nullable
@@ -57,9 +72,8 @@ public class EventCityDialog extends DialogFragment {
         if (getDialog() != null && getDialog().getWindow() != null && isAdded())
             getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
-
-        if (preferencesHelper.containKey(USER_CITY_KEY) && preferencesHelper.getString(USER_CITY_KEY) != null) {
-            nameEdt.setText(preferencesHelper.getString(USER_CITY_KEY));
+        if (getArguments() != null && getArguments().containsKey("USER_CITY_KEY") && getArguments().getString("USER_CITY_KEY") != null) {
+            nameEdt.setText(getArguments().getString("USER_CITY_KEY"));
         }
     }
 
@@ -67,10 +81,22 @@ public class EventCityDialog extends DialogFragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.confirm_btn:
+                if (validateCityName()) {
+                    onCitySelectedListner.onSelected(nameEdt.getText().toString());
+                    dismiss();
+                }
                 break;
             case R.id.discard_btn:
                 dismiss();
                 break;
         }
+    }
+
+    private boolean validateCityName() {
+        if (TextUtils.isEmpty(nameEdt.getText().toString())) {
+            Toast.makeText(getActivity(), "Enter your city name", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 }
