@@ -280,7 +280,7 @@ public class GoogleEventsList extends BaseFragment implements OnEventActionLIstn
             if (googleEventsAndForecastModel.getEventsModels() != null)
                 googleEventsAndForecastModel.getEventsModels().clear();
             swipeRefreshLayout.setRefreshing(true);
-            reInitGoogleEventsTask();
+            weatherObserver();
         } else {
             stopSwipeRefresh();
         }
