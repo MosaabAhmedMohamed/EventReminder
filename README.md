@@ -1,5 +1,5 @@
 # EventReminder
--interactive Event Reminder app to render the user events from it's Google calendar
+interactive Event Reminder app to render the user events from it's Google calendar
 
 1-The Application read User’s Google+ events (accounts should be entered first while setup)
 2-order events according to date and show the events in readable ListView.
